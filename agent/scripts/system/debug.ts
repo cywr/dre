@@ -1,21 +1,39 @@
 import { Logger } from "../../utils/logger";
+import { Hook } from "../../interfaces/hook";
 
-export namespace Debug {
-    const NAME = "[Anti-Debug]";
-    /**
-     * Perform hooks on the system to bypass anti-debug validations.
-     * 
-     */
-    export function hook() {
-        Logger.log(Logger.Type.Config, NAME, "Hooks loaded.");
+/**
+ * Perform hooks on the system to bypass anti-debug validations.
+*/
+export class Debug implements Hook {
+    NAME = "[Anti-Debug]"
+    LOG_TYPE = Logger.Type.Debug
+     
+    info(): void {
+        Logger.log(
+            Logger.Type.Config, 
+            this.NAME,
+              `\n╟─┬\x1b[35m android.os.Debug \x1b[0m`
+            + `\n║ └── isDebuggerConnected`
+            + `\n╙────────────────────────────────────────────────────┘`
+        );
+    }
+
+    execute(): void {
+        this.info()
         try {
-            const Debug = Java.use('android.os.Debug')
-            Debug.isDebuggerConnected.implementation = function () {
-                Logger.log(Logger.Type.Hook, NAME, "Debug.isDebuggerConnected: false");
-                return false;
-            }
+            this.checks(this)
         } catch(error) {
-            Logger.log(Logger.Type.Error, NAME, `Hooks failed.\n${error}`);
+            Logger.log(Logger.Type.Error, this.NAME, `Hooks failed: \n${error}`)
+        }
+    }
+
+    /** Hooked classes */
+    _Debug = Java.use('android.os.Debug')
+
+    checks(_this: Debug) {
+        _this._Debug.isDebuggerConnected.implementation = function () {
+            Logger.log(_this.LOG_TYPE, _this.NAME, "Debug.isDebuggerConnected: false");
+            return false;
         }
     }
 }
