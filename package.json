@@ -1,0 +1,25 @@
+{
+  "name": "testing",
+  "version": "0.0.1",
+  "description": "",
+  "main": "agent/index.ts",
+  "authors": [
+    {
+      "name": "Cynych WR",
+      "email": "cnchwr@gmail.com"
+    }
+  ],
+  "private": true,
+  "scripts": {
+    "lint": "tsc",
+    "build": "frida-compile agent/index.ts -o _build/index.js -c"
+  },
+  "devDependencies": {
+    "@types/node": "^16.10.3",
+    "@types/frida-gum": "^17.1.1",
+    "frida": "15.1.14",
+    "frida-compile": "^10.2.4",
+    "typescript": "^4.4.3"
+  },
+  "dependencies": {}
+}
