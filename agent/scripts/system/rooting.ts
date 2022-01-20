@@ -9,125 +9,30 @@ export class Rooting implements Hook {
     NAME = "[Anti-Rooting]";
     LOG_TYPE = Logger.Type.Debug
 
-        /** Hooked classes */
-        _PackageManager = Java.use("android.app.ApplicationPackageManager");
-        _File = Java.use("java.io.File");
-        _Runtime = Java.use('java.lang.Runtime');
-        _ProcessBuilder = Java.use('java.lang.ProcessBuilder');
-        _SystemProperties = Java.use('android.os.SystemProperties');
-        _String = Java.use('java.lang.String');
-        _BufferedReader = Java.use('java.io.BufferedReader');
-    
-        _NameNotFoundException = Java.use("android.content.pm.PackageManager$NameNotFoundException");
-    
-        /** Lists */
-        ROOTING_PACKAGES = [
-            "com.noshufou.android.su",
-            "com.noshufou.android.su.elite",
-            "eu.chainfire.supersu",
-            "com.koushikdutta.superuser",
-            "com.thirdparty.superuser",
-            "com.yellowes.su",
-            "com.koushikdutta.rommanager",
-            "com.koushikdutta.rommanager.license",
-            "com.dimonvideo.luckypatcher",
-            "com.chelpus.lackypatch",
-            "com.ramdroid.appquarantine",
-            "com.ramdroid.appquarantinepro",
-            "com.devadvance.rootcloak",
-            "com.devadvance.rootcloakplus",
-            "de.robv.android.xposed.installer",
-            "com.saurik.substrate",
-            "com.zachspong.temprootremovejb",
-            "com.amphoras.hidemyroot",
-            "com.amphoras.hidemyrootadfree",
-            "com.formyhm.hiderootPremium",
-            "com.formyhm.hideroot",
-            "me.phh.superuser",
-            "eu.chainfire.supersu.pro",
-            "com.kingouser.com"
-        ];
-        
-        ROOT_BINARIES = [
-            "su",
-            "busybox",
-            "supersu",
-            "Superuser.apk",
-            "KingoUser.apk",
-            "SuperSu.apk"
-        ];
-        
-        FILE_SYSTEM: Record < string, { exists ? : boolean, read ? : boolean, write ? : boolean } > = {
-            "/": {
-                write: false
-            },
-            "/data": {
-                write: false,
-                read: false
-            },
-            "/data/local/bin/su": {
-                exists: false
-            },
-            "/data/local/su": {
-                exists: false
-            },
-            "/data/local/xbin/su": {
-                exists: false
-            },
-            "/dev": {
-                write: false
-            },
-            "/etc": {
-                write: false
-            },
-            "/proc": {
-                write: false
-            },
-            "/sbin": {
-                write: false
-            },
-            "/sbin/su": {
-                exists: false
-            },
-            "/sys": {
-                write: false
-            },
-            "/system/bin/failsafe/su": {
-                exists: false
-            },
-            "/system/bin/su": {
-                exists: false
-            },
-            "/system/sd/xbin/su": {
-                exists: false
-            },
-            "/system/xbin/su": {
-                exists: false
-            },
-        };
-
     info(): void {
         Logger.log(
             Logger.Type.Config, 
-            this.NAME,
-              `\n╟─┬\x1b[35m android.app.ApplicationPackageManager \x1b[0m`
-            + `\n║ └── getPackageInfo`
-            + `\n╟─┬\x1b[35m java.io.File \x1b[0m`
-            + `\n║ ├── exists`
-            + `\n║ ├── canWrite`
-            + `\n║ └── canRead`
-            + `\n╟─┬\x1b[35m java.lang.Runtime \x1b[0m`
-            + `\n║ └── exec`
-            + `\n╟─┬\x1b[35m java.lang.ProcessBuilder \x1b[0m`
-            + `\n║ └── start`
-            + `\n╟─┬\x1b[35m android.os.SystemProperties \x1b[0m`
-            + `\n║ └── get`
-            + `\n╟─┬\x1b[35m java.lang.String \x1b[0m`
-            + `\n║ └── contains`
-            + `\n╟─┬\x1b[35m java.io.BufferedReader \x1b[0m`
-            + `\n║ └── readLine`
-            + `\n╟─┬\x1b[35m libc.so \x1b[0m`
-            + `\n║ └── system`
+            this.NAME, `LogType: Debug`
+            + `\n╓─┬\x1b[31m Java Classes \x1b[0m`
+            + `\n║ ├─┬\x1b[35m android.app.ApplicationPackageManager \x1b[0m`
+            + `\n║ │ └── getPackageInfo`
+            + `\n║ ├─┬\x1b[35m java.io.File \x1b[0m`
+            + `\n║ │ ├── exists`
+            + `\n║ │ ├── canWrite`
+            + `\n║ │ └── canRead`
+            + `\n║ ├─┬\x1b[35m java.lang.Runtime \x1b[0m`
+            + `\n║ │ └── exec`
+            + `\n║ ├─┬\x1b[35m java.lang.ProcessBuilder \x1b[0m`
+            + `\n║ │ └── start`
+            + `\n║ ├─┬\x1b[35m android.os.SystemProperties \x1b[0m`
+            + `\n║ │ └── get`
+            + `\n║ ├─┬\x1b[35m java.lang.String \x1b[0m`
+            + `\n║ │ └── contains`
+            + `\n║ └─┬\x1b[35m java.io.BufferedReader \x1b[0m`
+            + `\n║   └── readLine`
+            + `\n╟─┬\x1b[31m Native Files \x1b[0m`
+            + `\n║ └─┬\x1b[35m libc.so \x1b[0m`
+            + `\n║   └── system`
             + `\n╙────────────────────────────────────────────────────┘`
         );
     }
@@ -145,6 +50,103 @@ export class Rooting implements Hook {
             Logger.log(Logger.Type.Error, this.NAME, `Hooks failed: \n${error}`)
         }
     }
+
+    /** Hooked classes */
+    _PackageManager = Java.use("android.app.ApplicationPackageManager");
+    _File = Java.use("java.io.File");
+    _Runtime = Java.use('java.lang.Runtime');
+    _ProcessBuilder = Java.use('java.lang.ProcessBuilder');
+    _SystemProperties = Java.use('android.os.SystemProperties');
+    _String = Java.use('java.lang.String');
+    _BufferedReader = Java.use('java.io.BufferedReader');
+
+    _NameNotFoundException = Java.use("android.content.pm.PackageManager$NameNotFoundException");
+
+    /** Lists */
+    ROOTING_PACKAGES = [
+        "com.noshufou.android.su",
+        "com.noshufou.android.su.elite",
+        "eu.chainfire.supersu",
+        "com.koushikdutta.superuser",
+        "com.thirdparty.superuser",
+        "com.yellowes.su",
+        "com.koushikdutta.rommanager",
+        "com.koushikdutta.rommanager.license",
+        "com.dimonvideo.luckypatcher",
+        "com.chelpus.lackypatch",
+        "com.ramdroid.appquarantine",
+        "com.ramdroid.appquarantinepro",
+        "com.devadvance.rootcloak",
+        "com.devadvance.rootcloakplus",
+        "de.robv.android.xposed.installer",
+        "com.saurik.substrate",
+        "com.zachspong.temprootremovejb",
+        "com.amphoras.hidemyroot",
+        "com.amphoras.hidemyrootadfree",
+        "com.formyhm.hiderootPremium",
+        "com.formyhm.hideroot",
+        "me.phh.superuser",
+        "eu.chainfire.supersu.pro",
+        "com.kingouser.com"
+    ];
+    
+    ROOT_BINARIES = [
+        "su",
+        "busybox",
+        "supersu",
+        "Superuser.apk",
+        "KingoUser.apk",
+        "SuperSu.apk"
+    ];
+    
+    FILE_SYSTEM: Record < string, { exists ? : boolean, read ? : boolean, write ? : boolean } > = {
+        "/": {
+            write: false
+        },
+        "/data": {
+            write: false,
+            read: false
+        },
+        "/data/local/bin/su": {
+            exists: false
+        },
+        "/data/local/su": {
+            exists: false
+        },
+        "/data/local/xbin/su": {
+            exists: false
+        },
+        "/dev": {
+            write: false
+        },
+        "/etc": {
+            write: false
+        },
+        "/proc": {
+            write: false
+        },
+        "/sbin": {
+            write: false
+        },
+        "/sbin/su": {
+            exists: false
+        },
+        "/sys": {
+            write: false
+        },
+        "/system/bin/failsafe/su": {
+            exists: false
+        },
+        "/system/bin/su": {
+            exists: false
+        },
+        "/system/sd/xbin/su": {
+            exists: false
+        },
+        "/system/xbin/su": {
+            exists: false
+        },
+    };
 
     /**
     * Preventing application from access and retrieve information about rooting packages.
