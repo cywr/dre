@@ -6,7 +6,7 @@ import Java from "frida-java-bridge";
  * Perform hooks on the system to bypass anti-rooting validations.
 */
 
-export class Rooting implements Hook {
+export class Rooting extends Hook {
     NAME = "[Anti-Rooting]";
     LOG_TYPE = Logger.Type.Debug
 
@@ -41,27 +41,25 @@ export class Rooting implements Hook {
     execute(): void {
         this.info()
         try {
-            this.packageManager(this)
-            this.fileSystem(this)
-            this.runtimeExecutions(this)
-            this.systemProperties(this)
-            this.testKeysValidations(this)
-            this.nativeValidations(this) 
+            this.packageManager()
+            this.fileSystem()
+            this.runtimeExecutions()
+            this.systemProperties()
+            this.testKeysValidations()
+            this.nativeValidations() 
         } catch(error) {
             Logger.log(Logger.Type.Error, this.NAME, `Hooks failed: \n${error}`)
         }
     }
 
-    /** Hooked classes */
-    _PackageManager = Java.use("android.app.ApplicationPackageManager");
-    _File = Java.use("java.io.File");
-    _Runtime = Java.use('java.lang.Runtime');
-    _ProcessBuilder = Java.use('java.lang.ProcessBuilder');
-    _SystemProperties = Java.use('android.os.SystemProperties');
-    _String = Java.use('java.lang.String');
-    _BufferedReader = Java.use('java.io.BufferedReader');
-
-    _NameNotFoundException = Java.use("android.content.pm.PackageManager$NameNotFoundException");
+    private PackageManager = Java.use("android.app.ApplicationPackageManager");
+    private File = Java.use("java.io.File");
+    private Runtime = Java.use('java.lang.Runtime');
+    private ProcessBuilder = Java.use('java.lang.ProcessBuilder');
+    private SystemProperties = Java.use('android.os.SystemProperties');
+    private String = Java.use('java.lang.String');
+    private BufferedReader = Java.use('java.io.BufferedReader');
+    private NameNotFoundException = Java.use("android.content.pm.PackageManager$NameNotFoundException");
 
     /** Lists */
     ROOTING_PACKAGES = [
@@ -152,10 +150,11 @@ export class Rooting implements Hook {
     /**
     * Preventing application from access and retrieve information about rooting packages.
     */
-    packageManager(_this: Rooting) { 
-        _this._PackageManager.getPackageInfo.overload('java.lang.String', 'int').implementation = function (packageName: string, flags: number) {
-            if (_this.ROOTING_PACKAGES.includes(packageName)) {
-                Logger.log(_this.LOG_TYPE, _this.NAME, `PM.getPackageInfo: ${packageName}`);
+    packageManager() {
+        const log = this.log; 
+        this.PackageManager.getPackageInfo.overload('java.lang.String', 'int').implementation = function (packageName: string, flags: number) {
+            if (this.ROOTING_PACKAGES.includes(packageName)) {
+                log( `PM.getPackageInfo: ${packageName}`);
                 throw this._NameNotFoundException.$new(packageName);
             }
 
@@ -166,40 +165,42 @@ export class Rooting implements Hook {
     /**
     * Preventing application from using File System to validate access permissions.
     */
-    fileSystem(_this: Rooting) {
-        _this._File.exists.implementation = function() {
+    fileSystem() {
+        const log = this.log;
+        
+        this.File.exists.implementation = function() {
             const name = this.getName();
-            const override = _this.FILE_SYSTEM[name];
+            const override = this.FILE_SYSTEM[name];
 
-            if (_this.ROOT_BINARIES.includes(name)){
-                Logger.log(_this.LOG_TYPE, _this.NAME, `File.exists: ${name} -> false`);
+            if (this.ROOT_BINARIES.includes(name)){
+                log( `File.exists: ${name} -> false`);
                 return false;
             } else if (override && override.exists !== undefined) {
-                Logger.log(_this.LOG_TYPE, _this.NAME, `File.exists: ${name} -> ${override.exists}`);
+                log( `File.exists: ${name} -> ${override.exists}`);
                 return override.exists;
             } else {
                 return this.exists.call(this);
             }
         };
     
-        _this._File.canWrite.implementation = function() {
+        this.File.canWrite.implementation = function() {
             const name = this.getName();
-            const override = _this.FILE_SYSTEM[name];
+            const override = this.FILE_SYSTEM[name];
 
             if (override && override.write !== undefined) {
-                Logger.log(_this.LOG_TYPE, _this.NAME, `File.exists: ${name} -> ${override.write}`);
+                log( `File.exists: ${name} -> ${override.write}`);
                 return override.write;
             } else {
                 return this.canWrite.call(this);
             }
         };
     
-        _this._File.canRead.implementation = function() {
+        this.File.canRead.implementation = function() {
             const name = this.getName();
-            const override = _this.FILE_SYSTEM[name];
+            const override = this.FILE_SYSTEM[name];
 
             if (override && override.read !== undefined) {
-                Logger.log(_this.LOG_TYPE, _this.NAME, `File.exists: ${name} -> ${override.read}`);
+                log( `File.exists: ${name} -> ${override.read}`);
                 return override.read;
             } else {
                 return this.canRead.call(this);
@@ -210,8 +211,9 @@ export class Rooting implements Hook {
     /**
     * Preventing application from executing commands to evaluate system permissions.
     */
-    runtimeExecutions(_this: Rooting) {
-        _this._Runtime.exec.overloads.forEach((overload:any) => {
+    runtimeExecutions() {
+        const log = this.log;
+        this.Runtime.exec.overloads.forEach((overload:any) => {
             overload.implementation = function (...args: any) {
                 if (typeof args[0] === 'string' || args[0] instanceof String) {
                     var cmd = args[0].toString()
@@ -221,11 +223,11 @@ export class Rooting implements Hook {
                     || (cmd.indexOf("build.prop") != -1)
                     || (cmd == "id")
                     || (cmd == "sh")) {
-                        Logger.log(_this.LOG_TYPE, _this.NAME, `Runtime.exec: ${cmd}`);
+                        log( `Runtime.exec: ${cmd}`);
                         return this.exec.call(this, "grep");
                     }
                     if (cmd == "su") {
-                        Logger.log(_this.LOG_TYPE, _this.NAME, `Runtime.exec: ${cmd}`);
+                        log( `Runtime.exec: ${cmd}`);
                         return this.exec.call(this, "loremipsum");
                     }
 
@@ -241,11 +243,11 @@ export class Rooting implements Hook {
                         || (tmp_cmd.indexOf("build.prop") != -1) 
                         || (tmp_cmd == "id") 
                         || (tmp_cmd == "sh")) {
-                            Logger.log(_this.LOG_TYPE, _this.NAME, `Runtime.exec: ${array}`);
+                            log( `Runtime.exec: ${array}`);
                             return this.exec.call(this, "grep");
                         }
                         if (tmp_cmd == "su") {
-                            Logger.log(_this.LOG_TYPE, _this.NAME, `Runtime.exec: ${array}`);
+                            log( `Runtime.exec: ${array}`);
                             return this.exec.call(this, "loremipsum");
                         }
                     }
@@ -255,7 +257,7 @@ export class Rooting implements Hook {
             }
         });
 
-        _this._ProcessBuilder.start.implementation = function () {
+        this.ProcessBuilder.start.implementation = function () {
             var cmd = this.command.call(this);
             var shouldModifyCommand = false;
             
@@ -270,12 +272,12 @@ export class Rooting implements Hook {
                 }
             }
             if (shouldModifyCommand) {
-                Logger.log(_this.LOG_TYPE, _this.NAME, `ProcessBuilder.start: ${cmd}`);
+                log( `ProcessBuilder.start: ${cmd}`);
                 this.command.call(this, ["grep"]);
                 return this.start.call(this);
             }
             if (cmd.indexOf("su") != -1) {
-                Logger.log(_this.LOG_TYPE, _this.NAME, `ProcessBuilder.start: ${cmd}`);
+                log( `ProcessBuilder.start: ${cmd}`);
                 this.command.call(this, ["loremipsum"]);
                 return this.start.call(this);
             }
@@ -287,20 +289,21 @@ export class Rooting implements Hook {
     /**
     * Preventing application from retrieving system properties related to rooting.
     */
-    systemProperties(_this: Rooting){
-        _this._SystemProperties.get.overload('java.lang.String').implementation = function(name:string) {
+    systemProperties(){
+        const log = this.log;
+        this.SystemProperties.get.overload('java.lang.String').implementation = function(name:string) {
             switch(name) {
                 case "ro.build.selinux":
-                    Logger.log(_this.LOG_TYPE, _this.NAME, `SystemProperties.get: ${name} -> 1`);
+                    log( `SystemProperties.get: ${name} -> 1`);
                     return "1";
                 case "ro.debuggable":
-                    Logger.log(_this.LOG_TYPE, _this.NAME, `SystemProperties.get: ${name} -> 0`);
+                    log( `SystemProperties.get: ${name} -> 0`);
                     return "0";
                 case "service.adb.root":
-                    Logger.log(_this.LOG_TYPE, _this.NAME, `SystemProperties.get: ${name} -> 0`);
+                    log( `SystemProperties.get: ${name} -> 0`);
                     return "0";
                 case "ro.secure":
-                    Logger.log(_this.LOG_TYPE, _this.NAME, `SystemProperties.get: ${name} -> 1`);
+                    log( `SystemProperties.get: ${name} -> 1`);
                     return "1";
                 default:
                     return this.get.call(this, name);
@@ -312,11 +315,12 @@ export class Rooting implements Hook {
     /**
     * Preventing application from validating test-keys;
     */
-    testKeysValidations(_this: Rooting){
-        _this._String.contains.implementation = function(name:string) {
+    testKeysValidations(){
+        const log = this.log;
+        this.String.contains.implementation = function(name:string) {
             switch(name) {
                 case "test-keys":
-                    Logger.log(_this.LOG_TYPE, _this.NAME, `String.contains: ${name} -> false`);
+                    log( `String.contains: ${name} -> false`);
                     return false;
                 default:
                     return this.contains.call(this, name);
@@ -324,12 +328,12 @@ export class Rooting implements Hook {
             }
         };
 
-        _this._BufferedReader.readLine.overloads.forEach((overload:any) => {
+        this.BufferedReader.readLine.overloads.forEach((overload:any) => {
             overload.implementation = function (...args: any) {
                 var text = this.readLine.call(this, ...args);
 
                 if (text !== null && text.indexOf("ro.build.tags=test-keys") > -1) {
-                    Logger.log(_this.LOG_TYPE, _this.NAME, `BufferedReader.readLine: ${text} -> ro.build.tags=release-keys`);
+                    log( `BufferedReader.readLine: ${text} -> ro.build.tags=release-keys`);
                     text = text.replace("ro.build.tags=test-keys", "ro.build.tags=release-keys");
                 }
 
@@ -341,7 +345,8 @@ export class Rooting implements Hook {
     /**
     * Preventing application from validating rooting through native;
     */
-    nativeValidations(_this: Rooting){
+    nativeValidations(){
+        const log = this.log;
         Interceptor.attach((Module as any).findExportByName("libc.so", "system")!, {
             onEnter: function(args) {
                 var cmd = this.readCString(args[0]);
@@ -350,12 +355,12 @@ export class Rooting implements Hook {
                 || cmd == "mount" 
                 || cmd.indexOf("build.prop") != -1 
                 || cmd == "id") {
-                    Logger.log(_this.LOG_TYPE, _this.NAME, `Native libc.so: ${cmd}`);
+                    log( `Native libc.so: ${cmd}`);
                     this.writeUtf8String(args[0], "grep");
                 }
 
                 if (cmd == "su") {
-                    Logger.log(_this.LOG_TYPE, _this.NAME, `Native libc.so: ${cmd}`);
+                    log( `Native libc.so: ${cmd}`);
                     this.writeUtf8String(args[0], "loremipsum");
                 }
             },

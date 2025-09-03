@@ -5,7 +5,7 @@ import Java from "frida-java-bridge";
 /**
  * Perform hooks on the system to bypass anti-debug validations.
 */
-export class Debug implements Hook {
+export class Debug extends Hook {
     NAME = "[Anti-Debug]"
     LOG_TYPE = Logger.Type.Debug
      
@@ -23,18 +23,19 @@ export class Debug implements Hook {
     execute(): void {
         this.info()
         try {
-            this.checks(this)
+            this.checks()
         } catch(error) {
             Logger.log(Logger.Type.Error, this.NAME, `Hooks failed: \n${error}`)
         }
     }
 
-    /** Hooked classes */
-    _Debug = Java.use('android.os.Debug')
+    private Debug = Java.use('android.os.Debug')
 
-    checks(_this: Debug) {
-        _this._Debug.isDebuggerConnected.implementation = function () {
-            Logger.log(_this.LOG_TYPE, _this.NAME, "Debug.isDebuggerConnected: false");
+    checks() {
+        const log = this.log;
+        
+        this.Debug.isDebuggerConnected.implementation = function () {
+            log("Debug.isDebuggerConnected: false");
             return false;
         }
     }

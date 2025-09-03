@@ -22,18 +22,25 @@ enum NetworkType {
     GSM = 16,
     TD_SCDMA = 17,
     IWLAN = 18,
-  }
+}
 
 /**
  * Perform hooks on the system to bypass anti-debug validations.
 */
-export class DeviceCloaking implements Hook {
+export class DeviceCloaking extends Hook {
     NAME = "[Device Cloaking]";
     LOG_TYPE = Logger.Type.Debug;
 
+    private SettingsGlobal = Java.use("android.provider.Settings$Global");
+    private SettingsSecure = Java.use("android.provider.Settings$Secure");
+    private ContentResolver = Java.use('android.content.ContentResolver');
+    private Location = Java.use("android.location.Location");
+    private TelephonyManager = Java.use('android.telephony.TelephonyManager');
+    private ConnectivityManager = Java.use("android.net.ConnectivityManager");
+
     info(): void {
         Logger.log(
-            Logger.Type.Config, 
+            Logger.Type.Config,
             this.NAME, `LogType: Debug`
             + `\n╓─┬\x1b[31m Java Classes \x1b[0m`
             + `\n║ ├─┬\x1b[35m android.provider.Settings$Global \x1b[0m`
@@ -55,92 +62,85 @@ export class DeviceCloaking implements Hook {
             + `\n║ │ └── getNetworkType`
             + `\n║ ├─┬\x1b[35m android.net.ConnectivityManager \x1b[0m`
             + `\n║ │ └── getMobileDataEnabled`
-            + `\n╙────────────────────────────────────────────────────┘`
+        + `\n╙────────────────────────────────────────────────────┘`
         );
     }
 
     execute(): void {
         this.info()
         try {
-            this.build(this)
-            this.system(this)
-            this.systemProperties(this)
-            this.settingsGlobal(this)
-            this.settingsSecure(this)
-            this.googleServices(this)
-            this.location(this)
-            this.telephonyManager(this)
-            this.connectivityManager(this)
-        } catch(error) {
+            this.build()
+            this.system()
+            this.systemProperties()
+            this.settingsGlobal()
+            this.settingsSecure()
+            this.googleServices()
+            this.location()
+            this.telephonyManager()
+            this.connectivityManager()
+        } catch (error) {
             Logger.log(Logger.Type.Error, this.NAME, `Hooks failed: \n${error}`);
         }
     }
 
-    /** Hooked classes */
-    _SettingsGlobal = Java.use("android.provider.Settings$Global");
-    _SettingsSecure = Java.use("android.provider.Settings$Secure");
-    _ContentResolver = Java.use('android.content.ContentResolver');
-    _Location = Java.use("android.location.Location");
-    _TelephonyManager = Java.use('android.telephony.TelephonyManager');
-    _ConnectivityManager = Java.use("android.net.ConnectivityManager");
-
     /**
     * Preventing application from 
     */
-     build(_this: DeviceCloaking) {
+    build() {
 
     }
 
     /**
     * Preventing application from 
     */
-     system(_this: DeviceCloaking) {
+    system() {
 
     }
 
     /**
     * Preventing application from 
     */
-     systemProperties(_this: DeviceCloaking) {
+    systemProperties() {
 
     }
 
-    
     /**
     * android.provider.Settings$Global
     */
-     settingsGlobal(_this: DeviceCloaking) {
-        //getInt
-        _this._SettingsGlobal.getInt.overload("android.content.ContentResolver", "java.lang.String", "int").implementation = function(cr: any, name: string, number: number) {
+    settingsGlobal() {
+        const log = this.log;
+        
+        this.SettingsGlobal.getInt.overload("android.content.ContentResolver", "java.lang.String", "int").implementation = function (cr: any, name: string, number: number) {
             switch (name) {
                 case "development_settings_enabled":
-                    Logger.log(_this.LOG_TYPE, _this.NAME, `SettingsGlobal.getInt: development_settings_enabled -> 0`)
+                    log(`SettingsGlobal.getInt: development_settings_enabled -> 0`)
                     return 0;
                 case "airplane_mode_on":
-                    Logger.log(_this.LOG_TYPE, _this.NAME, `SettingsGlobal.getInt: airplane_mode_on -> 0`)
+                    log(`SettingsGlobal.getInt: airplane_mode_on -> 0`)
                     return 0;
                 case "mobile_data":
-                    Logger.log(_this.LOG_TYPE, _this.NAME, `SettingsGlobal.getInt: mobile_data -> 1`)
+                    log(`SettingsGlobal.getInt: mobile_data -> 1`)
                     return 1;
                 default:
                     break;
-              }
-              return this.getInt(cr, name, number);
+            }
+            return this.getInt(cr, name, number);
         };
     }
 
     /**
     * android.provider.Settings$Secure
     */
-     settingsSecure(_this: DeviceCloaking) {
-        //getString
-        _this._SettingsSecure.getString.overload("android.content.ContentResolver", "java.lang.String").implementation = function(cr: any, name: string) {
-            switch(name) {
+    settingsSecure() {
+        const log = this.log;
+        
+        this.SettingsSecure.getString.overload("android.content.ContentResolver", "java.lang.String").implementation = function (cr: any, name: string) {
+            switch (name) {
                 case "android_id":
-                    Logger.log(_this.LOG_TYPE, _this.NAME, `SettingsSecure.getString: android_id -> "2fc4b5912826ad1"`)
+                    log(`SettingsSecure.getString: android_id -> "2fc4b5912826ad1"`)
                     return "2fc4b5912826ad1"
                 case "mock_location":
-                    Logger.log(_this.LOG_TYPE, _this.NAME, `SettingsSecure.getString: mock_location -> "0"`)
+                    log(`SettingsSecure.getString: mock_location -> "0"`)
                     return "0"
                 default:
                     break
@@ -148,65 +148,68 @@ export class DeviceCloaking implements Hook {
             return this.getString(cr, name);
         };
 
-        //getInt
-        _this._SettingsSecure.getInt.overload("android.content.ContentResolver", "java.lang.String", "int").implementation = function(cr: any, name: string, number: number) {
+        this.SettingsSecure.getInt.overload("android.content.ContentResolver", "java.lang.String", "int").implementation = function (cr: any, name: string, number: number) {
             switch (name) {
                 case "development_settings_enabled":
-                    Logger.log(_this.LOG_TYPE, _this.NAME, `SettingsSecure.getInt: development_settings_enabled -> 0`)
+                    log(`SettingsSecure.getInt: development_settings_enabled -> 0`)
                     return 0
                 case "adb_enabled":
-                    Logger.log(_this.LOG_TYPE, _this.NAME, `SettingsSecure.getInt: adb_enabled -> 0`)
+                    log(`SettingsSecure.getInt: adb_enabled -> 0`)
                     return 0
                 case "airplane_mode_on":
-                    Logger.log(_this.LOG_TYPE, _this.NAME, `SettingsSecure.getInt: airplane_mode_on -> 0`)
+                    log(`SettingsSecure.getInt: airplane_mode_on -> 0`)
                     return 0
                 case "mobile_data":
-                    Logger.log(_this.LOG_TYPE, _this.NAME, `SettingsSecure.getInt: mobile_data -> 1`)
+                    log(`SettingsSecure.getInt: mobile_data -> 1`)
                     return 1
                 default:
                     break;
-              }
-              return this.getInt(cr, name, number);
+            }
+            return this.getInt(cr, name, number);
         };
     }
 
     /**
     * android.content.ContentResolver
     * 
-    * Preventing application from retriveing information about Google Services
+    * Preventing application from retrieving information about Google Services
     */
-     googleServices(_this: DeviceCloaking) {
-        _this._ContentResolver.query.overload('android.net.Uri', '[Ljava.lang.String;', 'android.os.Bundle', 'android.os.CancellationSignal').implementation = function(uri:any, str:any, bundle:any, sig:any){
-            if(uri == 'content://com.google.android.gsf.gservicesa') {
-                Logger.log(_this.LOG_TYPE, _this.NAME, `ContentResolver.query: com.google.android.gsf.gservicesa -> null`)
-                return null;
-            } else 
-                return this.query(uri,str,bundle,sig);
-        }
+    googleServices() {
+        const log = this.log;
         
-        _this._ContentResolver.query.overload('android.net.Uri', '[Ljava.lang.String;', 'java.lang.String', '[Ljava.lang.String;', 'java.lang.String').implementation = function(uri:any, astr:any, bstr:any, cstr:any, dstr:any) {
-            if(uri == 'content://com.google.android.gsf.gservicesa') {
-                Logger.log(_this.LOG_TYPE, _this.NAME, `ContentResolver.query: com.google.android.gsf.gservicesa -> null`)
+        this.ContentResolver.query.overload('android.net.Uri', '[Ljava.lang.String;', 'android.os.Bundle', 'android.os.CancellationSignal').implementation = function (uri: any, str: any, bundle: any, sig: any) {
+            if (uri == 'content://com.google.android.gsf.gservicesa') {
+                log(`ContentResolver.query: com.google.android.gsf.gservicesa -> null`)
                 return null;
             } else
-                return this.query(uri,astr,bstr,cstr,dstr);
+                return this.query(uri, str, bundle, sig);
         }
-        
-        _this._ContentResolver.query.overload('android.net.Uri', '[Ljava.lang.String;', 'java.lang.String', '[Ljava.lang.String;', 'java.lang.String', 'android.os.CancellationSignal').implementation = function(uri:any, astr:any, bstr:any, cstr:any, sig:any){
-            if(uri == 'content://com.google.android.gsf.gservicesa') {
-                Logger.log(_this.LOG_TYPE, _this.NAME, `ContentResolver.query: com.google.android.gsf.gservicesa -> null`)
+
+        this.ContentResolver.query.overload('android.net.Uri', '[Ljava.lang.String;', 'java.lang.String', '[Ljava.lang.String;', 'java.lang.String').implementation = function (uri: any, astr: any, bstr: any, cstr: any, dstr: any) {
+            if (uri == 'content://com.google.android.gsf.gservicesa') {
+                log(`ContentResolver.query: com.google.android.gsf.gservicesa -> null`)
                 return null;
-            } else 
-                return this.query(uri,astr,bstr,cstr,sig);
+            } else
+                return this.query(uri, astr, bstr, cstr, dstr);
+        }
+
+        this.ContentResolver.query.overload('android.net.Uri', '[Ljava.lang.String;', 'java.lang.String', '[Ljava.lang.String;', 'java.lang.String', 'android.os.CancellationSignal').implementation = function (uri: any, astr: any, bstr: any, cstr: any, sig: any) {
+            if (uri == 'content://com.google.android.gsf.gservicesa') {
+                log(`ContentResolver.query: com.google.android.gsf.gservicesa -> null`)
+                return null;
+            } else
+                return this.query(uri, astr, bstr, cstr, sig);
         }
     }
 
     /**
     * android.location.Location
     */
-    location(_this: DeviceCloaking) {
-        _this._Location.isFromMockProvider.overload().implementation = function() {
-            Logger.log(_this.LOG_TYPE, _this.NAME, `Location.isFromMockProvider: false`)
+    location() {
+        const log = this.log;
+        
+        this.Location.isFromMockProvider.overload().implementation = function () {
+            log(`Location.isFromMockProvider: false`)
             return false
         };
     }
@@ -214,72 +217,75 @@ export class DeviceCloaking implements Hook {
     /**
     * android.telephony.TelephonyManager
     */
-    telephonyManager(_this: DeviceCloaking) {
-        //getLine1Number
-        for (let index = 0; index < _this._TelephonyManager.getLine1Number.overloads.length; index++) {
-            _this._TelephonyManager.getLine1Number.overloads[index].implementation = function() {
-                Logger.log(_this.LOG_TYPE, _this.NAME, `TelephonyManager.getLine1Number: 1234567890`)
-                return "1234567890";
-            }
-        }
+    telephonyManager() {
+        const log = this.log;
         
-        //getSubscriberId
-        for (let index = 0; index < _this._TelephonyManager.getSubscriberId.overloads.length; index++) {
-            _this._TelephonyManager.getSubscriberId.overloads[index].implementation = function() {
-                Logger.log(_this.LOG_TYPE, _this.NAME, `TelephonyManager.getSubscriberId: 1234567890`)
+        // Hook all overloads of getLine1Number
+        this.TelephonyManager.getLine1Number.overloads.forEach((overload: any) => {
+            overload.implementation = function () {
+                log(`TelephonyManager.getLine1Number: 1234567890`)
                 return "1234567890";
             }
-            
-        }
+        });
 
-        //getDeviceId
-        for (let index = 0; index < _this._TelephonyManager.getDeviceId.overloads.length; index++) {
-            _this._TelephonyManager.getDeviceId.overloads[index].implementation = function() {
-                Logger.log(_this.LOG_TYPE, _this.NAME, `TelephonyManager.getDeviceId: 1234567890`)
+        // Hook all overloads of getSubscriberId
+        this.TelephonyManager.getSubscriberId.overloads.forEach((overload: any) => {
+            overload.implementation = function () {
+                log(`TelephonyManager.getSubscriberId: 1234567890`)
                 return "1234567890";
             }
-        }
-        
-        //getImei
-        for (let index = 0; index < _this._TelephonyManager.getImei.overloads.length; index++) {
-            _this._TelephonyManager.getImei.overloads[index].implementation = function() {
-                Logger.log(_this.LOG_TYPE, _this.NAME, `TelephonyManager.getImei: 1234567890`)
-                return "1234567890";
-            }
-        }
+        });
 
-        //getMeid
-        for (let index = 0; index < _this._TelephonyManager.getMeid.overloads.length; index++) {
-            _this._TelephonyManager.getMeid.overloads[index].implementation = function() {
-                Logger.log(_this.LOG_TYPE, _this.NAME, `TelephonyManager.getMeid: 1234567890`)
+        // Hook all overloads of getDeviceId
+        this.TelephonyManager.getDeviceId.overloads.forEach((overload: any) => {
+            overload.implementation = function () {
+                log(`TelephonyManager.getDeviceId: 1234567890`)
                 return "1234567890";
             }
-        }
+        });
 
-        //getSimOperator
-        for (let index = 0; index < _this._TelephonyManager.getSimOperator.overloads.length; index++) {
-            _this._TelephonyManager.getSimOperator.overloads[index].implementation = function() {
-                Logger.log(_this.LOG_TYPE, _this.NAME, `TelephonyManager.getSimOperator: 0000`)
+        // Hook all overloads of getImei
+        this.TelephonyManager.getImei.overloads.forEach((overload: any) => {
+            overload.implementation = function () {
+                log(`TelephonyManager.getImei: 1234567890`)
+                return "1234567890";
+            }
+        });
+
+        // Hook all overloads of getMeid
+        this.TelephonyManager.getMeid.overloads.forEach((overload: any) => {
+            overload.implementation = function () {
+                log(`TelephonyManager.getMeid: 1234567890`)
+                return "1234567890";
+            }
+        });
+
+        // Hook all overloads of getSimOperator
+        this.TelephonyManager.getSimOperator.overloads.forEach((overload: any) => {
+            overload.implementation = function () {
+                log(`TelephonyManager.getSimOperator: 0000`)
                 return "0000";
             }
-        }
+        });
 
-        //getNetworkType
-        for (let index = 0; index < _this._TelephonyManager.getNetworkType.overloads.length; index++) {
-            _this._TelephonyManager.getNetworkType.overloads[index].implementation = function() {
-                Logger.log(_this.LOG_TYPE, _this.NAME, `TelephonyManager.getNetworkType: LTE`)
+        // Hook all overloads of getNetworkType
+        this.TelephonyManager.getNetworkType.overloads.forEach((overload: any) => {
+            overload.implementation = function () {
+                log(`TelephonyManager.getNetworkType: LTE`)
                 return NetworkType.LTE;
             }
-        }
+        });
     }
 
     /**
     * android.net.ConnectivityManager
     */
-     connectivityManager(_this: DeviceCloaking) {
-        _this._ConnectivityManager.getMobileDataEnabled.overload().implementation = function() {
-            Logger.log(_this.LOG_TYPE, _this.NAME, `ConnectivityManager.getMobileDataEnabled: true`)
+    connectivityManager() {
+        const log = this.log;
+        
+        this.ConnectivityManager.getMobileDataEnabled.overload().implementation = function () {
+            log(`ConnectivityManager.getMobileDataEnabled: true`)
             return true
-      };
+        };
     }
 }

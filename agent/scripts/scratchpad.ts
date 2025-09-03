@@ -6,7 +6,7 @@ import Java from "frida-java-bridge";
 /**
  * Perform hooks on the system to bypass anti-debug validations.
 */
-export class Scratchpad implements Hook {
+export class Scratchpad extends Hook {
     NAME = "[Scratchpad]";
     LOG_TYPE = Logger.Type.Hook;
 
@@ -25,30 +25,30 @@ export class Scratchpad implements Hook {
     execute(): void {
         this.info()
         try {
-            this.startActivity(this);
-            this.testing(this);
+            this.startActivity();
+            this.testing();
         } catch(error) {
             Logger.log(Logger.Type.Error, this.NAME, `Hooks failed: \n${error}`);
         }
     }
 
-
-    testing(_this:Scratchpad) {
+    testing() {
         
     }
 
-    startActivity(_this:Scratchpad) {
-        var Activity = Java.use("android.app.Activity")
+    startActivity() {
+        const log = this.log;
+        const Activity = Java.use("android.app.Activity")
 
         Activity.startActivity.overloads.forEach((overload:any) => {
             overload.implementation = function (...args: any) {
-                Logger.log(_this.LOG_TYPE, _this.NAME, `Activity.startActivity: ${args}`)
+                log(`Activity.startActivity: ${args}`)
                 return this.startActivity(...args);
             }
         });
     }
 
-    traceClass(_this:Scratchpad, targetClass:string) {
+    traceClass(targetClass:string) {
         var hook;
         try {
             hook = Java.use(targetClass);
@@ -67,8 +67,8 @@ export class Scratchpad implements Hook {
              parsedMethods.push(methodReplace);
         });
       
-        _this.uniqBy(parsedMethods, JSON.stringify).forEach((targetMethod:any) => {
-            _this.traceMethod(targetClass + '.' + targetMethod);
+        this.uniqBy(parsedMethods, JSON.stringify).forEach((targetMethod:any) => {
+            this.traceMethod(targetClass + '.' + targetMethod);
         });
       }
       

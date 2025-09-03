@@ -22,13 +22,14 @@ enum Type {
 /**
  * Perform hooks on the system watch shared preference files.
  */
-export class SharedPreferencesWatcher implements Hook {
+export class SharedPreferencesWatcher extends Hook {
     NAME = "[SharedPreferencesWatcher]";
     LOG_TYPE = Logger.Type.Hook;
 
     targets!: [string];
 
     constructor(targets: [string]) {
+        super();
         this.targets = targets;
     }
     
@@ -60,180 +61,182 @@ export class SharedPreferencesWatcher implements Hook {
     execute(): void {
         this.info()
         try {
-            this.impl(this);
-            this.editorImpl(this);
+            this.impl();
+            this.editorImpl();
         } catch (error) {
             Logger.log(Logger.Type.Error, this.NAME, `Hooks failed: \n${error}`);
         }
     }
 
-    /** Hooked classes */
-    _SharedPreferencesImpl = Java.use("android.app.SharedPreferencesImpl");
-    _SharedPreferencesImpl_EditorImpl = Java.use("android.app.SharedPreferencesImpl$EditorImpl");
+    private SharedPreferencesImpl = Java.use("android.app.SharedPreferencesImpl");
+    private SharedPreferencesImpl_EditorImpl = Java.use("android.app.SharedPreferencesImpl$EditorImpl");
+    private File = Java.use("java.io.File");
 
-    _File = Java.use("java.io.File");
-
-    impl(_this: SharedPreferencesWatcher) {
-        //Contains
-        _this._SharedPreferencesImpl.contains.implementation = function (key: any) {
+    impl() {
+        const targets = this.targets;
+        const printData = this.printData.bind(this);
+        
+        this.SharedPreferencesImpl.contains.implementation = function (key: any) {
             var value = this.contains(key);
-            var sharedPreferencesFile = Java.cast(this.mFile.value, _this._File);
+            var sharedPreferencesFile = Java.cast(this.mFile.value, Java.use("java.io.File"));
 
-            _this.targets.forEach(target => {
+            targets.forEach((target: any) => {
                 if (sharedPreferencesFile.toString().includes(target)) {
-                    _this.printData(target, Action.contains, Type.none, key, null, value);
+                    printData(target, Action.contains, Type.none, key, null, value);
                 }
             });
             return value;
         };
         //getInt
-        _this._SharedPreferencesImpl.getInt.implementation = function (key: any, defValue: any) {
+        this.SharedPreferencesImpl.getInt.implementation = function (key: any, defValue: any) {
             var value = this.getInt(key, defValue);
-            var sharedPreferencesFile = Java.cast(this.mFile.value, _this._File);
+            var sharedPreferencesFile = Java.cast(this.mFile.value, this.File);
 
-            _this.targets.forEach(target => {
+            targets.forEach((target: any) => {
                 if (sharedPreferencesFile.toString().includes(target)) {
-                    _this.printData(target, Action.get, Type.int, key, defValue, value);
+                    printData(target, Action.get, Type.int, key, defValue, value);
                 }
             });
             return value;
         };
         //getFloat
-        _this._SharedPreferencesImpl.getFloat.implementation = function (key: any, defValue: any) {
+        this.SharedPreferencesImpl.getFloat.implementation = function (key: any, defValue: any) {
             var value = this.getFloat(key, defValue);
-            var sharedPreferencesFile = Java.cast(this.mFile.value, _this._File);
+            var sharedPreferencesFile = Java.cast(this.mFile.value, this.File);
 
-            _this.targets.forEach(target => {
+            targets.forEach((target: any) => {
                 if (sharedPreferencesFile.toString().includes(target)) {
-                    _this.printData(target, Action.get, Type.float, key, defValue, value);
+                    printData(target, Action.get, Type.float, key, defValue, value);
                 }
             });
             return value;
         };
         //getLong
-        _this._SharedPreferencesImpl.getLong.implementation = function (key: any, defValue: any) {
+        this.SharedPreferencesImpl.getLong.implementation = function (key: any, defValue: any) {
             var value = this.getLong(key, defValue);
-            var sharedPreferencesFile = Java.cast(this.mFile.value, _this._File);
+            var sharedPreferencesFile = Java.cast(this.mFile.value, this.File);
 
-            _this.targets.forEach(target => {
+            targets.forEach((target: any) => {
                 if (sharedPreferencesFile.toString().includes(target)) {
-                    _this.printData(target, Action.get, Type.long, key, defValue, value);
+                    printData(target, Action.get, Type.long, key, defValue, value);
                 }
             });
             return value;
         };
         //getBoolean
-        _this._SharedPreferencesImpl.getBoolean.implementation = function (key: any, defValue: any) {
+        this.SharedPreferencesImpl.getBoolean.implementation = function (key: any, defValue: any) {
             var value = this.getBoolean(key, defValue);
-            var sharedPreferencesFile = Java.cast(this.mFile.value, _this._File);
+            var sharedPreferencesFile = Java.cast(this.mFile.value, this.File);
 
-            _this.targets.forEach(target => {
+            targets.forEach((target: any) => {
                 if (sharedPreferencesFile.toString().includes(target)) {
-                    _this.printData(target, Action.get, Type.boolean, key, defValue, value);
+                    printData(target, Action.get, Type.boolean, key, defValue, value);
                 }
             });
             return value;
         };
         //getString
-        _this._SharedPreferencesImpl.getString.implementation = function (key: any, defValue: any) {
+        this.SharedPreferencesImpl.getString.implementation = function (key: any, defValue: any) {
             var value = this.getString(key, defValue);
-            var sharedPreferencesFile = Java.cast(this.mFile.value, _this._File);
+            var sharedPreferencesFile = Java.cast(this.mFile.value, this.File);
 
-            _this.targets.forEach(target => {
+            targets.forEach((target: any) => {
                 if (sharedPreferencesFile.toString().includes(target)) {
-                    _this.printData(target, Action.get, Type.string, key, defValue, value);
+                    printData(target, Action.get, Type.string, key, defValue, value);
                 }
             });
             return value;
         };
         //getStringSet
-        _this._SharedPreferencesImpl.getStringSet.implementation = function (key: any, defValue: any) {
+        this.SharedPreferencesImpl.getStringSet.implementation = function (key: any, defValue: any) {
             var value = this.getStringSet(key, defValue);
-            var sharedPreferencesFile = Java.cast(this.mFile.value, _this._File);
+            var sharedPreferencesFile = Java.cast(this.mFile.value, this.File);
 
-            _this.targets.forEach(target => {
+            targets.forEach((target: any) => {
                 if (sharedPreferencesFile.toString().includes(target)) {
-                    _this.printData(target, Action.get, Type.stringSet, key, defValue, value);
+                    printData(target, Action.get, Type.stringSet, key, defValue, value);
                 }
             });
             return value;
         };
     }
 
-    editorImpl(_this: SharedPreferencesWatcher) {
+    editorImpl() {
+        const targets = this.targets;
+        const printData = this.printData.bind(this);
         //putString
-        _this._SharedPreferencesImpl_EditorImpl.putString.implementation = function (key: any, value: any) {
-            var sharedPreferencesFile = Java.cast(this.this$0.value.mFile.value, _this._File);
+        this.SharedPreferencesImpl_EditorImpl.putString.implementation = function (key: any, value: any) {
+            var sharedPreferencesFile = Java.cast(this.this$0.value.mFile.value, this.File);
 
-            _this.targets.forEach(target => {
+            targets.forEach((target: any) => {
                 if (sharedPreferencesFile.toString().includes(target)) {
-                    _this.printData(target, Action.put, Type.string, key, null, value);
+                    printData(target, Action.put, Type.string, key, null, value);
                 }
             });
             return this.putString(key, value);
         };
         //putStringSet
-        _this._SharedPreferencesImpl_EditorImpl.putStringSet.implementation = function (key: any, values: any) {
-            var sharedPreferencesFile = Java.cast(this.this$0.value.mFile.value, _this._File);
+        this.SharedPreferencesImpl_EditorImpl.putStringSet.implementation = function (key: any, values: any) {
+            var sharedPreferencesFile = Java.cast(this.this$0.value.mFile.value, this.File);
 
-            _this.targets.forEach(target => {
+            targets.forEach((target: any) => {
                 if (sharedPreferencesFile.toString().includes(target)) {
-                    _this.printData(target, Action.put, Type.stringSet, key, null, values);
+                    printData(target, Action.put, Type.stringSet, key, null, values);
                 }
             });
             return this.putStringSet(key, values);
         };
         //putInt
-        _this._SharedPreferencesImpl_EditorImpl.putInt.implementation = function (key: any, value: any) {
-            var sharedPreferencesFile = Java.cast(this.this$0.value.mFile.value, _this._File);
+        this.SharedPreferencesImpl_EditorImpl.putInt.implementation = function (key: any, value: any) {
+            var sharedPreferencesFile = Java.cast(this.this$0.value.mFile.value, this.File);
 
-            _this.targets.forEach(target => {
+            targets.forEach((target: any) => {
                 if (sharedPreferencesFile.toString().includes(target)) {
-                    _this.printData(target, Action.put, Type.int, key, null, value);
+                    printData(target, Action.put, Type.int, key, null, value);
                 }
             });
             return this.putInt(key, value);
         };
         //putFloat
-        _this._SharedPreferencesImpl_EditorImpl.putFloat.implementation = function (key: any, value: any) {
-            var sharedPreferencesFile = Java.cast(this.this$0.value.mFile.value, _this._File);
+        this.SharedPreferencesImpl_EditorImpl.putFloat.implementation = function (key: any, value: any) {
+            var sharedPreferencesFile = Java.cast(this.this$0.value.mFile.value, this.File);
 
-            _this.targets.forEach(target => {
+            targets.forEach((target: any) => {
                 if (sharedPreferencesFile.toString().includes(target)) {
-                    _this.printData(target, Action.put, Type.float, key, null, value);
+                    printData(target, Action.put, Type.float, key, null, value);
                 }
             });
             return this.putFloat(key, value);
         };
         //putLong
-        _this._SharedPreferencesImpl_EditorImpl.putLong.implementation = function (key: any, value: any) {
-            var sharedPreferencesFile = Java.cast(this.this$0.value.mFile.value, _this._File);
+        this.SharedPreferencesImpl_EditorImpl.putLong.implementation = function (key: any, value: any) {
+            var sharedPreferencesFile = Java.cast(this.this$0.value.mFile.value, this.File);
 
-            _this.targets.forEach(target => {
+            targets.forEach((target: any) => {
                 if (sharedPreferencesFile.toString().includes(target)) {
-                    _this.printData(target, Action.put, Type.long, key, null, value);
+                    printData(target, Action.put, Type.long, key, null, value);
                 }
             });
             return this.putLong(key, value);
         };
         //putBoolean
-        _this._SharedPreferencesImpl_EditorImpl.putBoolean.implementation = function (key: any, value: any) {
-            var sharedPreferencesFile = Java.cast(this.this$0.value.mFile.value, _this._File);
+        this.SharedPreferencesImpl_EditorImpl.putBoolean.implementation = function (key: any, value: any) {
+            var sharedPreferencesFile = Java.cast(this.this$0.value.mFile.value, this.File);
 
-            _this.targets.forEach(target => {
+            targets.forEach((target: any) => {
                 if (sharedPreferencesFile.toString().includes(target)) {
-                    _this.printData(target, Action.put, Type.boolean, key, null, value);
+                    printData(target, Action.put, Type.boolean, key, null, value);
                 }
             });
             return this.putBoolean(key, value);
         };
         //remove
-        _this._SharedPreferencesImpl_EditorImpl.remove.implementation = function (key: any) {
-            var sharedPreferencesFile = Java.cast(this.this$0.value.mFile.value, _this._File);
+        this.SharedPreferencesImpl_EditorImpl.remove.implementation = function (key: any) {
+            var sharedPreferencesFile = Java.cast(this.this$0.value.mFile.value, this.File);
 
-            _this.targets.forEach(target => {
+            targets.forEach((target: any) => {
                 if (sharedPreferencesFile.toString().includes(target)) {
-                    _this.printData(target, Action.remove, Type.none, key, null, null);
+                    printData(target, Action.remove, Type.none, key, null, null);
                 }
             });
             return this.remove(key);

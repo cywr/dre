@@ -1,9 +1,13 @@
 import { Logger } from "../utils/logger";
 
-export interface Hook {
-    readonly NAME: string;
-    readonly LOG_TYPE: Logger.Type;
+export abstract class Hook {
+    abstract readonly NAME: string;
+    abstract readonly LOG_TYPE: Logger.Type;
 
-    info(): void;
-    execute(): void;
+    protected log = (message: string) => {
+        Logger.log(this.LOG_TYPE, this.NAME, message);
+    }
+
+    abstract info(): void;
+    abstract execute(): void;
 }

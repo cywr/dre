@@ -7,7 +7,7 @@ import Java from "frida-java-bridge";
  * Intercepts calls of the core class of the Java Cryptographic Extension (JCE) framework (javax.crypto.Cipher)'
  * 'Attempts to dump cryptographic parameters as well as the encryption/decryption data'
  */
-export class Cipher implements Hook {
+export class Cipher extends Hook {
     NAME = "[Cipher]"
     LOG_TYPE = Logger.Type.Hook
 
@@ -26,21 +26,22 @@ export class Cipher implements Hook {
     execute(): void {
         this.info()
         try {
-            this.init(this);
-            this.final(this);
+            this.init();
+            this.final();
         } catch (error) {
             Logger.log(Logger.Type.Error, this.NAME, `Hooks failed: \n${error}`);
         }
     }
 
-    /** Hooked classes */
-    _cipher = Java.use('javax.crypto.Cipher');
+    private cipher = Java.use('javax.crypto.Cipher');
 
     /**
      * Hooks on the initialization of Cipher instances.
      */
-    init(_this:Cipher) {
-        _this._cipher.init.overload('int', 'java.security.Key').implementation = function(mode: any, key: any) {
+    init() {
+        const log = this.log;
+        
+        this.cipher.init.overload('int', 'java.security.Key').implementation = function(mode: any, key: any) {
             var algorithm = this.getAlgorithm();
             var operation = "";
 
@@ -49,13 +50,13 @@ export class Cipher implements Hook {
             else if (mode == 2)
                 operation = "Decrypting";
 
-            Logger.log(_this.LOG_TYPE, _this.NAME, 
+            log(
                 `Instance initialized!!!\nAlgorithm: ${algorithm}\nOperation: ${operation}\nKey\n - Hex: ${Utils.bin2hex(key.getEncoded())}\n - ASCII: ${Utils.bin2ascii(key.getEncoded())}`
             );
             return this.init(mode, key);
         }
 
-        _this._cipher.init.overload('int', 'java.security.Key', 'java.security.spec.AlgorithmParameterSpec').implementation = function(mode: any, key: any, paramsec: any) {
+        this.cipher.init.overload('int', 'java.security.Key', 'java.security.spec.AlgorithmParameterSpec').implementation = function(mode: any, key: any, paramsec: any) {
             var algorithm = this.getAlgorithm();
             var operation = "";
 
@@ -70,13 +71,13 @@ export class Cipher implements Hook {
             else if (mode == 2)
                 operation = "Decrypting";
 
-            Logger.log(_this.LOG_TYPE, _this.NAME, 
+            log( 
                 `Instance initialized!!!\nAlgorithm: ${algorithm}\nOperation: ${operation}\nKey\n - Hex: ${Utils.bin2hex(key.getEncoded())}\n - ASCII: ${Utils.bin2ascii(key.getEncoded())}\nIV\n - Hex: ${Utils.bin2hex(param.getIV())}`
             );
             return this.init(mode, key, paramsec);
         }
 
-        _this._cipher.init.overload('int', 'java.security.Key', 'java.security.AlgorithmParameters', 'java.security.SecureRandom').implementation = function(mode: any, key: any, paramsec: any) {
+        this.cipher.init.overload('int', 'java.security.Key', 'java.security.AlgorithmParameters', 'java.security.SecureRandom').implementation = function(mode: any, key: any, paramsec: any) {
             var algorithm = this.getAlgorithm();
             var operation = "";
 
@@ -91,7 +92,7 @@ export class Cipher implements Hook {
             else if (mode == 2)
                 operation = "Decrypting";
 
-            Logger.log(_this.LOG_TYPE, _this.NAME, 
+            log( 
                 `Instance initialized!!!\nAlgorithm: ${algorithm}\nOperation: ${operation}\nKey\n - Hex: ${Utils.bin2hex(key.getEncoded())}\n - ASCII: ${Utils.bin2ascii(key.getEncoded())}\nIV\n - Hex: ${Utils.bin2hex(param.getIV())}`
             );
             return this.init(mode, key, paramsec);
@@ -101,8 +102,10 @@ export class Cipher implements Hook {
     /**
      * Interception of inputs and outputs of executions.
      */
-    final(_this:Cipher) {
-        _this._cipher.doFinal.overload('[B').implementation = function (inputByteArray: number[]) {
+    final() {
+        const log = this.log;
+        
+        this.cipher.doFinal.overload('[B').implementation = function (inputByteArray: number[]) {
             var outputByteArray = this.doFinal(inputByteArray);
 
             var inputHex = Utils.bin2hex(inputByteArray);
@@ -110,14 +113,14 @@ export class Cipher implements Hook {
             var outputHex = Utils.bin2hex(outputByteArray);
             var outputAscii = Utils.bin2ascii(outputByteArray);
 
-            Logger.log(_this.LOG_TYPE, _this.NAME, 
+            log( 
                 `Execution!!!\nInput\n - Hex: ${inputHex}\n - ASCII: ${inputAscii}\nOutput\n - Hex: ${outputHex}\n - ASCII: ${outputAscii}`
             );
 
             return outputByteArray;
         }
 
-        _this._cipher.doFinal.overload('[B', 'int').implementation = function (inputByteArray: number[], outputOffset: any) {
+        this.cipher.doFinal.overload('[B', 'int').implementation = function (inputByteArray: number[], outputOffset: any) {
             var outputByteArray = this.doFinal(inputByteArray, outputOffset);
 
             var inputHex = Utils.bin2hex(inputByteArray);
@@ -125,14 +128,14 @@ export class Cipher implements Hook {
             var outputHex = Utils.bin2hex(outputByteArray);
             var outputAscii = Utils.bin2ascii(outputByteArray);
 
-            Logger.log(_this.LOG_TYPE, _this.NAME, 
+            log( 
                 `Execution!!!\nInput\n - Hex: ${inputHex}\n - ASCII: ${inputAscii}\nOutput\n - Hex: ${outputHex}\n - ASCII: ${outputAscii}`
             );
 
             return outputByteArray;
         }
 
-        _this._cipher.doFinal.overload('[B', 'int', 'int').implementation = function (inputByteArray: number[], outputOffset: number, inputlen: number) {
+        this.cipher.doFinal.overload('[B', 'int', 'int').implementation = function (inputByteArray: number[], outputOffset: number, inputlen: number) {
             var outputByteArray = this.doFinal(inputByteArray, outputOffset, inputlen);
 
             var inputHex = Utils.bin2hex(inputByteArray);
@@ -140,14 +143,14 @@ export class Cipher implements Hook {
             var outputHex = Utils.bin2hex(outputByteArray);
             var outputAscii = Utils.bin2ascii(outputByteArray);
 
-            Logger.log(_this.LOG_TYPE, _this.NAME, 
+            log( 
                 `Execution!!!\nInput\n - Hex: ${inputHex}\n - ASCII: ${inputAscii}\nOutput\n - Hex: ${outputHex}\n - ASCII: ${outputAscii}`
             );
 
             return outputByteArray;
         }
 
-        _this._cipher.doFinal.overload('[B', 'int', 'int', '[B').implementation = function (inputByteArray: number[], outputOffset: number, inputlen: number, output: number[]) {
+        this.cipher.doFinal.overload('[B', 'int', 'int', '[B').implementation = function (inputByteArray: number[], outputOffset: number, inputlen: number, output: number[]) {
             var outputByteArray = this.doFinal(inputByteArray, outputOffset, inputlen, output);
 
             var inputHex = Utils.bin2hex(inputByteArray);
@@ -155,14 +158,14 @@ export class Cipher implements Hook {
             var outputHex = Utils.bin2hex(outputByteArray);
             var outputAscii = Utils.bin2ascii(outputByteArray);
 
-            Logger.log(_this.LOG_TYPE, _this.NAME, 
+            log( 
                 `Execution!!!\nInput\n - Hex: ${inputHex}\n - ASCII: ${inputAscii}\nOutput\n - Hex: ${outputHex}\n - ASCII: ${outputAscii}`
             );
 
             return outputByteArray;
         }
 
-        _this._cipher.doFinal.overload('[B', 'int', 'int', '[B', 'int').implementation = function (inputByteArray: number[], outputOffset: number, inputlen: number, output: number[], outoffset: number) {
+        this.cipher.doFinal.overload('[B', 'int', 'int', '[B', 'int').implementation = function (inputByteArray: number[], outputOffset: number, inputlen: number, output: number[], outoffset: number) {
             var outputByteArray = this.doFinal(inputByteArray, outputOffset, inputlen, output, outoffset);
 
             var inputHex = Utils.bin2hex(inputByteArray);
@@ -170,7 +173,7 @@ export class Cipher implements Hook {
             var outputHex = Utils.bin2hex(outputByteArray);
             var outputAscii = Utils.bin2ascii(outputByteArray);
 
-            Logger.log(_this.LOG_TYPE, _this.NAME, 
+            log( 
                 `Execution!!!\nInput\n - Hex: ${inputHex}\n - ASCII: ${inputAscii}\nOutput\n - Hex: ${outputHex}\n - ASCII: ${outputAscii}`
             );
 
