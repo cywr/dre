@@ -1,5 +1,6 @@
 import { Logger } from "../../utils/logger";
 import { Hook } from "../../interfaces/hook";
+import Java from "frida-java-bridge";
 
 enum Action {
     contains,

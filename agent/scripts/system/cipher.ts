@@ -1,6 +1,7 @@
 import { Logger } from "../../utils/logger";
 import * as Utils from "../../utils/functions"
 import { Hook } from "../../interfaces/hook";
+import Java from "frida-java-bridge";
 
 /**
  * Intercepts calls of the core class of the Java Cryptographic Extension (JCE) framework (javax.crypto.Cipher)'

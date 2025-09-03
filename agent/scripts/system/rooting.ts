@@ -1,5 +1,6 @@
 import { Logger } from "../../utils/logger";
 import { Hook } from "../../interfaces/hook";
+import Java from "frida-java-bridge";
 
 /**
  * Perform hooks on the system to bypass anti-rooting validations.
@@ -341,7 +342,7 @@ export class Rooting implements Hook {
     * Preventing application from validating rooting through native;
     */
     nativeValidations(_this: Rooting){
-        Interceptor.attach(Module.findExportByName("libc.so", "system")!, {
+        Interceptor.attach((Module as any).findExportByName("libc.so", "system")!, {
             onEnter: function(args) {
                 var cmd = this.readCString(args[0]);
 

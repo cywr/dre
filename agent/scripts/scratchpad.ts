@@ -1,6 +1,7 @@
 import * as Utils from "../utils/functions"
 import { Logger } from "../utils/logger";
 import { Hook } from "../interfaces/hook";
+import Java from "frida-java-bridge";
 
 /**
  * Perform hooks on the system to bypass anti-debug validations.

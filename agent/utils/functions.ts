@@ -1,3 +1,5 @@
+import Java from "frida-java-bridge";
+
 export var bin2ascii = function (input: any) {
     try {
         var buffer = Java.array('byte', input);

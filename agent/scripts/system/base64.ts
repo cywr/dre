@@ -1,6 +1,7 @@
 import { Logger } from "../../utils/logger";
 import * as Utils from "../../utils/functions"
 import { Hook } from "../../interfaces/hook";
+import Java from "frida-java-bridge";
 
 /**
  * Perform hooks on the system to intercept encodings.

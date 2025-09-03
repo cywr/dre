@@ -1,5 +1,6 @@
 import { Hook } from "./interfaces/hook";
 import * as Scripts from "./scripts/modules";
+import Java from "frida-java-bridge";
 
 export const debug = false
 
