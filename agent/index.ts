@@ -1,8 +1,9 @@
 import { Hook } from "./interfaces/hook";
 import * as Scripts from "./scripts/modules";
+import { Logger } from "./utils/logger";
 import Java from "frida-java-bridge";
 
-export const debug = false
+export const logLevel = Logger.LogLevel.INFO;
 
 /**
  * https://www.piliapp.com/symbol/line/
@@ -10,6 +11,15 @@ export const debug = false
 
 if (Java.available) {
     Java.performNow(() =>{
+        Logger.setLogLevel(logLevel);
+        
+        const logLevelNames = {
+            [Logger.LogLevel.ERROR]: "ERROR",
+            [Logger.LogLevel.INFO]: "INFO", 
+            [Logger.LogLevel.DEBUG]: "DEBUG",
+            [Logger.LogLevel.VERBOSE]: "VERBOSE"
+        };
+        
         console.log(
             "\n"
             + "\n██████╗░░░░██████╗░░░░███████╗░░░██████╗░"
@@ -18,7 +28,8 @@ if (Java.available) {
             + "\n██║░░██║░░░██╔══██╗░░░██╔══╝░░░░░██╔═══╝░"
             + "\n██████╔╝██╗██║░░██║██╗███████╗██╗██║░░░░░"
             + "\n╚═════╝░╚═╝╚═╝░░╚═╝╚═╝╚══════╝╚═╝╚═╝░░░░░"
-            + "\n\x1b[31mⲃⲩ ⲥⲩⲛⲩⲥⲏ ⲱꞅ.\x1b[0m\n"
+            + "\n\x1b[31mⲃⲩ ⲥⲩⲛⲩⲥⲏⲱꞅ\x1b[0m"
+            + `\n\x1b[33mLog Level: ${logLevelNames[logLevel]}\x1b[0m\n`
         )
     })
 
@@ -31,10 +42,10 @@ if (Java.available) {
             new Scripts.Rooting(),
             new Scripts.Debug(),
             new Scripts.Spoofing(),
+            
             new Scripts.SSLPinning(),
-
-            // new Scripts.Cipher(),
-            // new Scripts.Base64(),
+            new Scripts.Cipher(),
+            new Scripts.Base64(),
             // new Scripts.SharedPreferencesWatcher(["decrypted_preferences.xml"]),
             
             new Scripts.Scratchpad(),

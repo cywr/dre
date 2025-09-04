@@ -12,7 +12,10 @@
   "private": true,
   "scripts": {
     "lint": "tsc",
-    "build": "frida-compile agent/index.ts -o _build/index.js -c"
+    "build": "frida-compile agent/index.ts -o _build/index.js -c",
+    "start": "./run.sh",
+    "frida:direct": "npm run build && npx frida -U -f",
+    "owasp.mstg.uncrackable1": "npm run build && npx frida -U -f owasp.mstg.uncrackable1 -l _build/index.js"
   },
   "devDependencies": {
     "@types/frida-gum": "^19.0.1",

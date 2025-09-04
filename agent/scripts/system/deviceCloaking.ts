@@ -40,7 +40,7 @@ export class DeviceCloaking extends Hook {
 
     info(): void {
         Logger.log(
-            Logger.Type.Config,
+            Logger.Type.Debug,
             this.NAME, `LogType: Debug`
             + `\n╓─┬\x1b[31m Java Classes \x1b[0m`
             + `\n║ ├─┬\x1b[35m android.provider.Settings$Global \x1b[0m`

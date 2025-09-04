@@ -7,7 +7,7 @@ import Java from "frida-java-bridge";
  */
 export class Spoofing extends Hook {
     NAME = "[Spoofing]";
-    LOG_TYPE = Logger.Type.Hook;
+    LOG_TYPE = Logger.Type.Verbose;
 
     // Spoofed device configuration
     private spoofedDevice = {
@@ -59,8 +59,8 @@ export class Spoofing extends Hook {
 
     info(): void {
         Logger.log(
-            Logger.Type.Config,
-            this.NAME, `LogType: Hook`
+            Logger.Type.Debug,
+            this.NAME, `LogType: Verbose`
             + `\n╓─┬\x1b[31m Java Classes \x1b[0m`
             + `\n║ ├─┬\x1b[35m android.os.Build \x1b[0m`
             + `\n║ │ ├── getRadioVersion`

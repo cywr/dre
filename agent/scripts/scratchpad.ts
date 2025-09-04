@@ -12,7 +12,7 @@ export class Scratchpad extends Hook {
 
     info(): void {
         Logger.log(
-            Logger.Type.Config,
+            Logger.Type.Debug,
             this.NAME, `LogType: Hook`
             + `\n╓─┬\x1b[31m Java Classes \x1b[0m`
             + `\n║ └──\x1b[35m ? \x1b[0m`
