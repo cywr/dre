@@ -5,8 +5,8 @@ import Java from "frida-java-bridge";
 /**
  * Perform hooks to bypass SSL/TLS certificate pinning validations.
  */
-export class SSL extends Hook {
-    NAME = "[SSL]";
+export class SSLPinning extends Hook {
+    NAME = "[SSL Pinning]";
     LOG_TYPE = Logger.Type.Hook;
 
     info(): void {

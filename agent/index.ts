@@ -30,10 +30,12 @@ if (Java.available) {
             new Scripts.DeviceCloaking(),
             new Scripts.Rooting(),
             new Scripts.Debug(),
+            new Scripts.Spoofing(),
+            new Scripts.SSLPinning(),
 
             // new Scripts.Cipher(),
             // new Scripts.Base64(),
-            new Scripts.SharedPreferencesWatcher(["decrypted_preferences.xml"]),
+            // new Scripts.SharedPreferencesWatcher(["decrypted_preferences.xml"]),
             
             new Scripts.Scratchpad(),
         ])

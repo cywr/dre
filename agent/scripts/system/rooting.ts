@@ -151,11 +151,14 @@ export class Rooting extends Hook {
     * Preventing application from access and retrieve information about rooting packages.
     */
     packageManager() {
-        const log = this.log; 
+        const log = this.log;
+        const ROOTING_PACKAGES = this.ROOTING_PACKAGES;
+        const NameNotFoundException = this.NameNotFoundException;
+        
         this.PackageManager.getPackageInfo.overload('java.lang.String', 'int').implementation = function (packageName: string, flags: number) {
-            if (this.ROOTING_PACKAGES.includes(packageName)) {
-                log( `PM.getPackageInfo: ${packageName}`);
-                throw this._NameNotFoundException.$new(packageName);
+            if (ROOTING_PACKAGES.includes(packageName)) {
+                log(`PM.getPackageInfo: hiding ${packageName}`);
+                throw NameNotFoundException.$new(packageName);
             }
 
             return this.getPackageInfo.call(this, packageName, flags);
@@ -167,16 +170,18 @@ export class Rooting extends Hook {
     */
     fileSystem() {
         const log = this.log;
+        const FILE_SYSTEM = this.FILE_SYSTEM;
+        const ROOT_BINARIES = this.ROOT_BINARIES;
         
         this.File.exists.implementation = function() {
             const name = this.getName();
-            const override = this.FILE_SYSTEM[name];
+            const override = FILE_SYSTEM[name];
 
-            if (this.ROOT_BINARIES.includes(name)){
-                log( `File.exists: ${name} -> false`);
+            if (ROOT_BINARIES.includes(name)){
+                log(`File.exists: ${name} -> false`);
                 return false;
             } else if (override && override.exists !== undefined) {
-                log( `File.exists: ${name} -> ${override.exists}`);
+                log(`File.exists: ${name} -> ${override.exists}`);
                 return override.exists;
             } else {
                 return this.exists.call(this);
@@ -185,10 +190,10 @@ export class Rooting extends Hook {
     
         this.File.canWrite.implementation = function() {
             const name = this.getName();
-            const override = this.FILE_SYSTEM[name];
+            const override = FILE_SYSTEM[name];
 
             if (override && override.write !== undefined) {
-                log( `File.exists: ${name} -> ${override.write}`);
+                log(`File.canWrite: ${name} -> ${override.write}`);
                 return override.write;
             } else {
                 return this.canWrite.call(this);
@@ -197,10 +202,10 @@ export class Rooting extends Hook {
     
         this.File.canRead.implementation = function() {
             const name = this.getName();
-            const override = this.FILE_SYSTEM[name];
+            const override = FILE_SYSTEM[name];
 
             if (override && override.read !== undefined) {
-                log( `File.exists: ${name} -> ${override.read}`);
+                log(`File.canRead: ${name} -> ${override.read}`);
                 return override.read;
             } else {
                 return this.canRead.call(this);
