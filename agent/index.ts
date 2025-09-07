@@ -1,5 +1,4 @@
 import { log } from "console";
-import { Hook } from "./interfaces/hook";
 import * as Scripts from "./scripts/modules";
 import { Logger } from "./utils/logger";
 import Java from "frida-java-bridge";
@@ -35,24 +34,20 @@ if (Java.available) {
         console.log("\n\x1b[34m╓──────────────── STARTING UP HOOKS ──────────────────╖\x1b[0m");
         console.log("\x1b[34m╚═════════════════════════════════════════════════════╝\x1b[0m");
 
-        bypass([
-            new Scripts.Rooting(),
-            new Scripts.Debug(),
-            new Scripts.Spoofing(),
+        // Execute namespace-based hooks
+        Scripts.Rooting.performNow();
+        Scripts.Debug.performNow();
+        Scripts.Spoofing.performNow();
 
-            new Scripts.SSLPinning(),
-            new Scripts.Cipher(),
-            new Scripts.Base64(),
-            // new Scripts.SharedPreferencesWatcher(["decrypted_preferences.xml"]),
+        Scripts.SSLPinning.performNow();
+        Scripts.Cipher.performNow();
+        Scripts.Base64.performNow();
+        // Scripts.SharedPreferencesWatcher.initialize(["decrypted_preferences.xml"]);
+        // Scripts.SharedPreferencesWatcher.performNow();
 
-            new Scripts.Scratchpad(),
-        ])
+        Scripts.Scratchpad.performNow();
 
         console.log("\x1b[32m╓─────────────────────── LOGS ────────────────────────╖\x1b[0m");
         console.log("\x1b[32m╚═════════════════════════════════════════════════════╝\x1b[0m");
     })
-}
-
-function bypass(hooks: Array<Hook>) {
-    hooks.forEach(hook => hook.execute());
 }

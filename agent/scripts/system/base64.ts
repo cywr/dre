@@ -1,19 +1,20 @@
 import { Logger } from "../../utils/logger";
 import * as Utils from "../../utils/functions"
-import { Hook } from "../../interfaces/hook";
 import Java from "frida-java-bridge";
 
 /**
  * Perform hooks on the system to intercept encodings.
 */
-export class Base64 extends Hook {
-    NAME = "[Base64]";
-    LOG_TYPE = Logger.Type.Hook;
+export namespace Base64 {
+    const NAME = "[Base64]";
+    const log = (message: string) => Logger.log(Logger.Type.Hook, NAME, message);
 
-    info(): void {
+    const Base64 = Java.use('android.util.Base64');
+
+    function info(): void {
         Logger.log(
             Logger.Type.Debug, 
-            this.NAME, `LogType: Hook`
+            NAME, `LogType: Hook`
             + `\n╓─┬\x1b[31m Java Classes \x1b[0m`
             + `\n║ └─┬\x1b[35m android.util.Base64 \x1b[0m`
             + `\n║   ├── decode`
@@ -23,22 +24,18 @@ export class Base64 extends Hook {
         );
     }
 
-    execute(): void {
-        this.info()
+    export function performNow(): void {
+        info()
         try {
-            this.decode()
-            this.encode()
+            decode()
+            encode()
         } catch(error) {
-            Logger.log(Logger.Type.Error, this.NAME, `Hooks failed: \n${error}`);
+            Logger.log(Logger.Type.Error, NAME, `Hooks failed: \n${error}`);
         }
     }
 
-    private Base64 = Java.use('android.util.Base64');
-
-    decode() {
-        const log = this.log;
-        
-        this.Base64.decode.overloads.forEach((overload: any) => {
+    function decode() {
+        Base64.decode.overloads.forEach((overload: any) => {
             overload.implementation = function(...args: any) {
                 var output = this.decode(...args);
                 
@@ -57,10 +54,8 @@ export class Base64 extends Hook {
         });
     }
 
-    encode() {
-        const log = this.log;
-        
-        this.Base64.encode.overloads.forEach((overload: any) => {
+    function encode() {
+        Base64.encode.overloads.forEach((overload: any) => {
             overload.implementation = function(...args: any) {
                 var output = this.encode(...args);
                 log(`Base64.encode\n - Input: ${Utils.bin2ascii(args[0])}\n - Output: ${Utils.bin2ascii(output)}`);
@@ -68,7 +63,7 @@ export class Base64 extends Hook {
             };
         });
         
-        this.Base64.encodeToString.overloads.forEach((overload: any) => {
+        Base64.encodeToString.overloads.forEach((overload: any) => {
             overload.implementation = function(...args: any) {
                 var output = this.encodeToString(...args);
                 log(`Base64.encodeToString\n - Input: ${Utils.bin2ascii(args[0])}\n - Output: ${output}`);

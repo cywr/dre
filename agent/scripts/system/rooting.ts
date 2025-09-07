@@ -1,19 +1,31 @@
 import { Logger } from "../../utils/logger";
-import { Hook } from "../../interfaces/hook";
 import Java from "frida-java-bridge";
 
 /**
  * Perform hooks on the system to bypass anti-rooting validations.
-*/
+ */
+export namespace Rooting {
+    const NAME = "[Anti-Rooting]"
+    const log = (message: string) => Logger.log(Logger.Type.Debug, NAME, message)
 
-export class Rooting extends Hook {
-    NAME = "[Anti-Rooting]";
-    LOG_TYPE = Logger.Type.Debug
+    export function performNow(): void {
+        info()
+        try {
+            packageManager()
+            fileSystem()
+            runtimeExecutions()
+            systemProperties()
+            testKeysValidations()
+            nativeValidations() 
+        } catch (error) {
+            Logger.log(Logger.Type.Error, NAME, `Hooks failed: \n${error}`)
+        }
+    }
 
-    info(): void {
+    function info(): void {
         Logger.log(
             Logger.Type.Debug, 
-            this.NAME, `LogType: Debug`
+            NAME, `LogType: Debug`
             + `\n╓─┬\x1b[31m Java Classes \x1b[0m`
             + `\n║ ├─┬\x1b[35m android.app.ApplicationPackageManager \x1b[0m`
             + `\n║ │ └── getPackageInfo`
@@ -38,31 +50,7 @@ export class Rooting extends Hook {
         );
     }
 
-    execute(): void {
-        this.info()
-        try {
-            this.packageManager()
-            this.fileSystem()
-            this.runtimeExecutions()
-            this.systemProperties()
-            this.testKeysValidations()
-            this.nativeValidations() 
-        } catch(error) {
-            Logger.log(Logger.Type.Error, this.NAME, `Hooks failed: \n${error}`)
-        }
-    }
-
-    private PackageManager = Java.use("android.app.ApplicationPackageManager");
-    private File = Java.use("java.io.File");
-    private Runtime = Java.use('java.lang.Runtime');
-    private ProcessBuilder = Java.use('java.lang.ProcessBuilder');
-    private SystemProperties = Java.use('android.os.SystemProperties');
-    private String = Java.use('java.lang.String');
-    private BufferedReader = Java.use('java.io.BufferedReader');
-    private NameNotFoundException = Java.use("android.content.pm.PackageManager$NameNotFoundException");
-
-    /** Lists */
-    ROOTING_PACKAGES = [
+    const ROOTING_PACKAGES = [
         "com.noshufou.android.su",
         "com.noshufou.android.su.elite",
         "eu.chainfire.supersu",
@@ -89,7 +77,7 @@ export class Rooting extends Hook {
         "com.kingouser.com"
     ];
     
-    ROOT_BINARIES = [
+    const ROOT_BINARIES = [
         "su",
         "busybox",
         "supersu",
@@ -98,7 +86,7 @@ export class Rooting extends Hook {
         "SuperSu.apk"
     ];
     
-    FILE_SYSTEM: Record < string, { exists ? : boolean, read ? : boolean, write ? : boolean } > = {
+    const FILE_SYSTEM: Record<string, { exists?: boolean, read?: boolean, write?: boolean }> = {
         "/": {
             write: false
         },
@@ -148,14 +136,13 @@ export class Rooting extends Hook {
     };
 
     /**
-    * Preventing application from access and retrieve information about rooting packages.
-    */
-    packageManager() {
-        const log = this.log;
-        const ROOTING_PACKAGES = this.ROOTING_PACKAGES;
-        const NameNotFoundException = this.NameNotFoundException;
+     * Preventing application from access and retrieve information about rooting packages.
+     */
+    function packageManager() {
+        const PackageManager = Java.use("android.app.ApplicationPackageManager");
+        const NameNotFoundException = Java.use("android.content.pm.PackageManager$NameNotFoundException");
         
-        this.PackageManager.getPackageInfo.overload('java.lang.String', 'int').implementation = function (packageName: string, flags: number) {
+        PackageManager.getPackageInfo.overload('java.lang.String', 'int').implementation = function (packageName: string, flags: number) {
             if (ROOTING_PACKAGES.includes(packageName)) {
                 log(`PM.getPackageInfo: hiding ${packageName}`);
                 throw NameNotFoundException.$new(packageName);
@@ -166,14 +153,12 @@ export class Rooting extends Hook {
     }
 
     /**
-    * Preventing application from using File System to validate access permissions.
-    */
-    fileSystem() {
-        const log = this.log;
-        const FILE_SYSTEM = this.FILE_SYSTEM;
-        const ROOT_BINARIES = this.ROOT_BINARIES;
+     * Preventing application from using File System to validate access permissions.
+     */
+    function fileSystem() {
+        const File = Java.use("java.io.File");
         
-        this.File.exists.implementation = function() {
+        File.exists.implementation = function() {
             const name = this.getName();
             const override = FILE_SYSTEM[name];
 
@@ -188,7 +173,7 @@ export class Rooting extends Hook {
             }
         };
     
-        this.File.canWrite.implementation = function() {
+        File.canWrite.implementation = function() {
             const name = this.getName();
             const override = FILE_SYSTEM[name];
 
@@ -200,7 +185,7 @@ export class Rooting extends Hook {
             }
         };
     
-        this.File.canRead.implementation = function() {
+        File.canRead.implementation = function() {
             const name = this.getName();
             const override = FILE_SYSTEM[name];
 
@@ -214,11 +199,13 @@ export class Rooting extends Hook {
     }
 
     /**
-    * Preventing application from executing commands to evaluate system permissions.
-    */
-    runtimeExecutions() {
-        const log = this.log;
-        this.Runtime.exec.overloads.forEach((overload:any) => {
+     * Preventing application from executing commands to evaluate system permissions.
+     */
+    function runtimeExecutions() {
+        const Runtime = Java.use('java.lang.Runtime');
+        const ProcessBuilder = Java.use('java.lang.ProcessBuilder');
+        
+        Runtime.exec.overloads.forEach((overload:any) => {
             overload.implementation = function (...args: any) {
                 if (typeof args[0] === 'string' || args[0] instanceof String) {
                     var cmd = args[0].toString()
@@ -262,7 +249,7 @@ export class Rooting extends Hook {
             }
         });
 
-        this.ProcessBuilder.start.implementation = function () {
+        ProcessBuilder.start.implementation = function () {
             var cmd = this.command.call(this);
             var shouldModifyCommand = false;
             
@@ -292,11 +279,12 @@ export class Rooting extends Hook {
     }
 
     /**
-    * Preventing application from retrieving system properties related to rooting.
-    */
-    systemProperties(){
-        const log = this.log;
-        this.SystemProperties.get.overload('java.lang.String').implementation = function(name:string) {
+     * Preventing application from retrieving system properties related to rooting.
+     */
+    function systemProperties(){
+        const SystemProperties = Java.use('android.os.SystemProperties');
+        
+        SystemProperties.get.overload('java.lang.String').implementation = function(name:string) {
             switch(name) {
                 case "ro.build.selinux":
                     log( `SystemProperties.get: ${name} -> 1`);
@@ -318,11 +306,13 @@ export class Rooting extends Hook {
     }
 
     /**
-    * Preventing application from validating test-keys;
-    */
-    testKeysValidations(){
-        const log = this.log;
-        this.String.contains.implementation = function(name:string) {
+     * Preventing application from validating test-keys;
+     */
+    function testKeysValidations(){
+        const String = Java.use('java.lang.String');
+        const BufferedReader = Java.use('java.io.BufferedReader');
+        
+        String.contains.implementation = function(name:string) {
             switch(name) {
                 case "test-keys":
                     log( `String.contains: ${name} -> false`);
@@ -333,7 +323,7 @@ export class Rooting extends Hook {
             }
         };
 
-        this.BufferedReader.readLine.overloads.forEach((overload:any) => {
+        BufferedReader.readLine.overloads.forEach((overload:any) => {
             overload.implementation = function (...args: any) {
                 var text = this.readLine.call(this, ...args);
 
@@ -348,10 +338,9 @@ export class Rooting extends Hook {
     }
 
     /**
-    * Preventing application from validating rooting through native;
-    */
-    nativeValidations(){
-        const log = this.log;
+     * Preventing application from validating rooting through native;
+     */
+    function nativeValidations(){
         Interceptor.attach((Module as any).findExportByName("libc.so", "system")!, {
             onEnter: function(args) {
                 var cmd = this.readCString(args[0]);

@@ -1,20 +1,29 @@
 import { Logger } from "../../utils/logger";
 import * as Utils from "../../utils/functions"
-import { Hook } from "../../interfaces/hook";
 import Java from "frida-java-bridge";
 
 /**
  * Intercepts calls of the core class of the Java Cryptographic Extension (JCE) framework (javax.crypto.Cipher)'
  * 'Attempts to dump cryptographic parameters as well as the encryption/decryption data'
  */
-export class Cipher extends Hook {
-    NAME = "[Cipher]"
-    LOG_TYPE = Logger.Type.Hook
+export namespace Cipher {
+    const NAME = "[Cipher]"
+    const log = (message: string) => Logger.log(Logger.Type.Hook, NAME, message);
 
-    info(): void {
+    export function performNow(): void {
+        info()
+        try {
+            init();
+            final();
+        } catch (error) {
+            Logger.log(Logger.Type.Error, NAME, `Hooks failed: \n${error}`);
+        }
+    }
+
+    function info(): void {
         Logger.log(
             Logger.Type.Debug, 
-            this.NAME, `LogType: Hook`
+            NAME, `LogType: Hook`
             + `\n╓─┬\x1b[31m Java Classes \x1b[0m`
             + `\n║ └─┬\x1b[35m javax.crypto.Cipher \x1b[0m`
             + `\n║   ├── init`
@@ -22,26 +31,14 @@ export class Cipher extends Hook {
             + `\n╙────────────────────────────────────────────────────┘`
         );
     }
-    
-    execute(): void {
-        this.info()
-        try {
-            this.init();
-            this.final();
-        } catch (error) {
-            Logger.log(Logger.Type.Error, this.NAME, `Hooks failed: \n${error}`);
-        }
-    }
-
-    private cipher = Java.use('javax.crypto.Cipher');
 
     /**
      * Hooks on the initialization of Cipher instances.
      */
-    init() {
-        const log = this.log;
+    function init() {
+        const cipher = Java.use('javax.crypto.Cipher');
         
-        this.cipher.init.overloads.forEach((overload: any) => {
+        cipher.init.overloads.forEach((overload: any) => {
             overload.implementation = function(...args: any) {
                 var algorithm = this.getAlgorithm();
                 var operation = "";
@@ -79,10 +76,10 @@ export class Cipher extends Hook {
     /**
      * Interception of inputs and outputs of executions.
      */
-    final() {
-        const log = this.log;
+    function final() {
+        const cipher = Java.use('javax.crypto.Cipher');
         
-        this.cipher.doFinal.overloads.forEach((overload: any) => {
+        cipher.doFinal.overloads.forEach((overload: any) => {
             overload.implementation = function(...args: any) {
                 var outputByteArray = this.doFinal(...args);
 

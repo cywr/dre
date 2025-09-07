@@ -1,18 +1,30 @@
 import { Logger } from "../../utils/logger";
-import { Hook } from "../../interfaces/hook";
 import Java from "frida-java-bridge";
 
 /**
  * Perform hooks to bypass SSL/TLS certificate pinning validations.
  */
-export class SSLPinning extends Hook {
-    NAME = "[SSL Pinning]";
-    LOG_TYPE = Logger.Type.Hook;
+export namespace SSLPinning {
+    const NAME = "[SSL Pinning]";
+    const log = (message: string) => Logger.log(Logger.Type.Hook, NAME, message);
 
-    info(): void {
+    export function performNow(): void {
+        info();
+        try {
+            sslContextBypass();
+            trustManagerBypass();
+            conscryptTrustManagerBypass();
+            okHttpPinningBypass();
+            legacyOkHttpPinningBypass();
+        } catch (error) {
+            Logger.log(Logger.Type.Error, NAME, `Hooks failed: \n${error}`);
+        }
+    }
+
+    function info(): void {
         Logger.log(
             Logger.Type.Debug, 
-            this.NAME, `LogType: Hook`
+            NAME, `LogType: Hook`
             + `\n╓─┬\x1b[31m Java Classes \x1b[0m`
             + `\n║ ├─┬\x1b[35m javax.net.ssl.SSLContext \x1b[0m`
             + `\n║ │ └── init`
@@ -30,33 +42,18 @@ export class SSLPinning extends Hook {
             + `\n╙────────────────────────────────────────────────────┘`
         );
     }
-    
-    execute(): void {
-        this.info();
-        try {
-            this.sslContextBypass();
-            this.trustManagerBypass();
-            this.conscryptTrustManagerBypass();
-            this.okHttpPinningBypass();
-            this.legacyOkHttpPinningBypass();
-        } catch (error) {
-            Logger.log(Logger.Type.Error, this.NAME, `Hooks failed: \n${error}`);
-        }
-    }
-
-    private SSLContext = Java.use("javax.net.ssl.SSLContext");
-    private X509TrustManager = Java.use("javax.net.ssl.X509TrustManager");
 
     /**
      * Bypasses SSL pinning by replacing SSLContext initialization with custom TrustManager.
      */
-    sslContextBypass() {
-        const log = this.log;
+    function sslContextBypass() {
+        const SSLContext = Java.use("javax.net.ssl.SSLContext");
+        const X509TrustManager = Java.use("javax.net.ssl.X509TrustManager");
 
         try {
             const TrustManager = Java.registerClass({
                 name: "com.generated.TrustManager",
-                implements: [this.X509TrustManager],
+                implements: [X509TrustManager],
                 methods: {
                     checkClientTrusted: function(chain: any, authType: any) {
                         log(`Custom TrustManager: checkClientTrusted bypassed`);
@@ -70,7 +67,7 @@ export class SSLPinning extends Hook {
                 }
             });
 
-            this.SSLContext.init.overloads.forEach((overload: any) => {
+            SSLContext.init.overloads.forEach((overload: any) => {
                 overload.implementation = function(keyManagers: any, trustManagers: any, secureRandom: any) {
                     log(`SSLContext.init: replacing TrustManagers with custom bypass`);
                     const customTrustManager = TrustManager.$new();
@@ -85,19 +82,19 @@ export class SSLPinning extends Hook {
     /**
      * Bypasses X509TrustManager certificate validation.
      */
-    trustManagerBypass() {
-        const log = this.log;
+    function trustManagerBypass() {
+        const X509TrustManager = Java.use("javax.net.ssl.X509TrustManager");
 
         try {
-            this.X509TrustManager.checkClientTrusted.implementation = function(chain: any, authType: any) {
+            X509TrustManager.checkClientTrusted.implementation = function(chain: any, authType: any) {
                 log(`X509TrustManager.checkClientTrusted: bypassed`);
             };
 
-            this.X509TrustManager.checkServerTrusted.implementation = function(chain: any, authType: any) {
+            X509TrustManager.checkServerTrusted.implementation = function(chain: any, authType: any) {
                 log(`X509TrustManager.checkServerTrusted: bypassed`);
             };
 
-            this.X509TrustManager.getAcceptedIssuers.implementation = function() {
+            X509TrustManager.getAcceptedIssuers.implementation = function() {
                 log(`X509TrustManager.getAcceptedIssuers: returning empty array`);
                 return [];
             };
@@ -109,9 +106,7 @@ export class SSLPinning extends Hook {
     /**
      * Bypasses Android's internal TrustManagerImpl.
      */
-    conscryptTrustManagerBypass() {
-        const log = this.log;
-
+    function conscryptTrustManagerBypass() {
         try {
             const TrustManagerImpl = Java.use("com.android.org.conscrypt.TrustManagerImpl");
 
@@ -136,9 +131,7 @@ export class SSLPinning extends Hook {
     /**
      * Bypasses OkHttp 3.x certificate pinning.
      */
-    okHttpPinningBypass() {
-        const log = this.log;
-
+    function okHttpPinningBypass() {
         try {
             const CertificatePinner = Java.use("okhttp3.CertificatePinner");
 
@@ -155,9 +148,7 @@ export class SSLPinning extends Hook {
     /**
      * Bypasses legacy OkHttp 2.x certificate pinning.
      */
-    legacyOkHttpPinningBypass() {
-        const log = this.log;
-
+    function legacyOkHttpPinningBypass() {
         try {
             const CertificatePinner = Java.use("com.android.okhttp.CertificatePinner");
 

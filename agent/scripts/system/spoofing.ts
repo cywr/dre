@@ -1,5 +1,4 @@
 import { Logger } from "../../utils/logger";
-import { Hook } from "../../interfaces/hook";
 import Java from "frida-java-bridge";
 
 enum NetworkType {
@@ -27,12 +26,12 @@ enum NetworkType {
 /**
  * Comprehensive spoofing hooks to bypass detection and emulate real device characteristics.
  */
-export class Spoofing extends Hook {
-    NAME = "[Spoofing]";
-    LOG_TYPE = Logger.Type.Verbose;
+export namespace Spoofing {
+    const NAME = "[Spoofing]";
+    const log = (message: string) => Logger.log(Logger.Type.Verbose, NAME, message);
 
     // Spoofed device configuration
-    private spoofedDevice = {
+    const spoofedDevice = {
         BRAND: "samsung",
         MODEL: "SM-G975F",
         MANUFACTURER: "samsung",
@@ -47,7 +46,7 @@ export class Spoofing extends Hook {
         GSF_ID: "3f4c5e6d7a8b9c0d"
     };
 
-    private spoofedVersion = {
+    const spoofedVersion = {
         RELEASE: "11",
         SDK_INT: 30,
         CODENAME: "REL",
@@ -55,7 +54,7 @@ export class Spoofing extends Hook {
         SECURITY_PATCH: "2021-07-01"
     };
 
-    private spoofedTelephony = {
+    const spoofedTelephony = {
         mcc: "310",
         mnc: "260",
         operatorName: "T-Mobile",
@@ -64,7 +63,7 @@ export class Spoofing extends Hook {
         networkType: 13
     };
 
-    private spoofedLocation = {
+    const spoofedLocation = {
         latitude: 40.7128,
         longitude: -74.0060,
         altitude: 10.0,
@@ -72,17 +71,17 @@ export class Spoofing extends Hook {
         provider: "gps"
     };
 
-    private spoofedBattery = {
+    const spoofedBattery = {
         level: 75,
         status: 2, // BATTERY_STATUS_CHARGING
         scale: 100,
         plugType: 1 // BATTERY_PLUGGED_AC
     };
 
-    info(): void {
+    function info(): void {
         Logger.log(
             Logger.Type.Debug,
-            this.NAME, `LogType: Verbose`
+            NAME, `LogType: Verbose`
             + `\n╓─┬\x1b[31m Java Classes \x1b[0m`
             + `\n║ ├─┬\x1b[35m android.os.Build \x1b[0m`
             + `\n║ │ ├── getRadioVersion`
@@ -146,64 +145,60 @@ export class Spoofing extends Hook {
         );
     }
 
-    execute(): void {
-        this.info();
+    export function performNow(): void {
+        info();
         try {
-            this.buildHooks();
-            this.systemHooks();
-            this.networkHooks();
-            this.telephonyHooks();
-            this.locationSensorHooks();
-            this.mediaHooks();
-            this.intentHooks();
-            this.resourcesHooks();
-            this.contentResolverHooks();
-            this.settingsSecureHooks();
-            this.settingsGlobalHooks();
-            this.contextHooks();
-            this.runtimeHooks();
+            buildHooks();
+            systemHooks();
+            networkHooks();
+            telephonyHooks();
+            locationSensorHooks();
+            mediaHooks();
+            intentHooks();
+            resourcesHooks();
+            contentResolverHooks();
+            settingsSecureHooks();
+            settingsGlobalHooks();
+            contextHooks();
+            runtimeHooks();
         } catch (error) {
-            Logger.log(Logger.Type.Error, this.NAME, `Hooks failed: \n${error}`);
+            Logger.log(Logger.Type.Error, NAME, `Hooks failed: \n${error}`);
         }
     }
 
     // Java classes
-    private Build = Java.use("android.os.Build");
-    private BuildVersion = Java.use("android.os.Build$VERSION");
-    private SystemClass = Java.use("java.lang.System");
-    private ConnectivityManager = Java.use("android.net.ConnectivityManager");
-    private NetworkInfo = Java.use("android.net.NetworkInfo");
-    private WifiInfo = Java.use("android.net.wifi.WifiInfo");
-    private InetAddress = Java.use("java.net.InetAddress");
-    private TelephonyManager = Java.use("android.telephony.TelephonyManager");
-    private LocationManager = Java.use("android.location.LocationManager");
-    private Location = Java.use("android.location.Location");
-    private Sensor = Java.use("android.hardware.Sensor");
-    private MediaDrm = Java.use("android.media.MediaDrm");
-    private WebView = Java.use("android.webkit.WebView");
-    private Intent = Java.use("android.content.Intent");
-    private Resources = Java.use("android.content.res.Resources");
-    private ResourcesImpl = Java.use("android.content.res.ResourcesImpl");
-    private ContentResolver = Java.use("android.content.ContentResolver");
-    private SettingsSecure = Java.use("android.provider.Settings$Secure");
-    private SettingsGlobal = Java.use("android.provider.Settings$Global");
-    private ContextImpl = Java.use("android.app.ContextImpl");
-    private UUID = Java.use("java.util.UUID");
+    const Build = Java.use("android.os.Build");
+    const BuildVersion = Java.use("android.os.Build$VERSION");
+    const SystemClass = Java.use("java.lang.System");
+    const ConnectivityManager = Java.use("android.net.ConnectivityManager");
+    const NetworkInfo = Java.use("android.net.NetworkInfo");
+    const WifiInfo = Java.use("android.net.wifi.WifiInfo");
+    const InetAddress = Java.use("java.net.InetAddress");
+    const TelephonyManager = Java.use("android.telephony.TelephonyManager");
+    const LocationManager = Java.use("android.location.LocationManager");
+    const Location = Java.use("android.location.Location");
+    const Sensor = Java.use("android.hardware.Sensor");
+    const MediaDrm = Java.use("android.media.MediaDrm");
+    const WebView = Java.use("android.webkit.WebView");
+    const Intent = Java.use("android.content.Intent");
+    const Resources = Java.use("android.content.res.Resources");
+    const ResourcesImpl = Java.use("android.content.res.ResourcesImpl");
+    const ContentResolver = Java.use("android.content.ContentResolver");
+    const SettingsSecure = Java.use("android.provider.Settings$Secure");
+    const SettingsGlobal = Java.use("android.provider.Settings$Global");
+    const ContextImpl = Java.use("android.app.ContextImpl");
+    const UUID = Java.use("java.util.UUID");
 
     /**
      * Build and system property spoofing
      */
-    buildHooks() {
-        const log = this.log;
-        const spoofedDevice = this.spoofedDevice;
-        const spoofedVersion = this.spoofedVersion;
-
+    function buildHooks() {
         try {
             // Hook Build static fields
             for (const [key, value] of Object.entries(spoofedDevice)) {
                 if (key === "ANDROID_ID" || key === "GSF_ID") continue; // These are handled elsewhere
                 try {
-                    this.Build[key].value = value;
+                    Build[key].value = value;
                     log(`Build.${key} spoofed to: ${value}`);
                 } catch (error) {
                     log(`Failed to spoof Build.${key}: ${error}`);
@@ -213,7 +208,7 @@ export class Spoofing extends Hook {
             // Hook VERSION static fields
             for (const [key, value] of Object.entries(spoofedVersion)) {
                 try {
-                    this.BuildVersion[key].value = value;
+                    BuildVersion[key].value = value;
                     log(`Build.VERSION.${key} spoofed to: ${value}`);
                 } catch (error) {
                     log(`Failed to spoof Build.VERSION.${key}: ${error}`);
@@ -221,13 +216,13 @@ export class Spoofing extends Hook {
             }
 
             // Hook Build methods
-            this.Build.getRadioVersion.implementation = function () {
+            Build.getRadioVersion.implementation = function () {
                 const ret = this.getRadioVersion();
                 log(`Build.getRadioVersion: ${ret} -> ${spoofedDevice.RADIO}`);
                 return spoofedDevice.RADIO;
             };
 
-            this.Build.getSerial.implementation = function () {
+            Build.getSerial.implementation = function () {
                 const ret = this.getSerial();
                 log(`Build.getSerial: ${ret} -> ${spoofedDevice.SERIAL}`);
                 return spoofedDevice.SERIAL;
@@ -240,13 +235,9 @@ export class Spoofing extends Hook {
     /**
      * System property spoofing
      */
-    systemHooks() {
-        const log = this.log;
-        const spoofedDevice = this.spoofedDevice;
-        const spoofedVersion = this.spoofedVersion;
-
+    function systemHooks() {
         try {
-            this.SystemClass.getProperty.overload("java.lang.String").implementation = function (key: string) {
+            SystemClass.getProperty.overload("java.lang.String").implementation = function (key: string) {
                 const ret = this.getProperty(key);
 
                 switch (key) {
@@ -273,7 +264,7 @@ export class Spoofing extends Hook {
                 }
             };
 
-            this.SystemClass.getProperty.overload("java.lang.String", "java.lang.String").implementation = function (key: string, defaultValue: string) {
+            SystemClass.getProperty.overload("java.lang.String", "java.lang.String").implementation = function (key: string, defaultValue: string) {
                 const ret = this.getProperty(key, defaultValue);
 
                 switch (key) {
@@ -301,57 +292,55 @@ export class Spoofing extends Hook {
     /**
      * Network and connectivity spoofing
      */
-    networkHooks() {
-        const log = this.log;
-
+    function networkHooks() {
         try {
             // ConnectivityManager
-            this.ConnectivityManager.getMobileDataEnabled.implementation = function () {
+            ConnectivityManager.getMobileDataEnabled.implementation = function () {
                 const ret = this.getMobileDataEnabled();
                 log(`ConnectivityManager.getMobileDataEnabled: ${ret} -> true`);
                 return true;
             };
 
             // NetworkInfo
-            this.NetworkInfo.getType.implementation = function () {
+            NetworkInfo.getType.implementation = function () {
                 const ret = this.getType();
                 log(`NetworkInfo.getType: ${ret} -> 1 (WIFI)`);
                 return 1;
             };
 
-            this.NetworkInfo.getTypeName.implementation = function () {
+            NetworkInfo.getTypeName.implementation = function () {
                 const ret = this.getTypeName();
                 log(`NetworkInfo.getTypeName: ${ret} -> WIFI`);
                 return "WIFI";
             };
 
-            this.NetworkInfo.getSubtype.implementation = function () {
+            NetworkInfo.getSubtype.implementation = function () {
                 const ret = this.getSubtype();
                 log(`NetworkInfo.getSubtype: ${ret} -> -1`);
                 return -1;
             };
 
             // WifiInfo
-            this.WifiInfo.getSSID.implementation = function () {
+            WifiInfo.getSSID.implementation = function () {
                 const ret = this.getSSID();
                 log(`WifiInfo.getSSID: ${ret} -> "AndroidWifi"`);
                 return '"AndroidWifi"';
             };
 
-            this.WifiInfo.getBSSID.implementation = function () {
+            WifiInfo.getBSSID.implementation = function () {
                 const ret = this.getBSSID();
                 log(`WifiInfo.getBSSID: ${ret} -> 02:00:00:00:00:00`);
                 return "02:00:00:00:00:00";
             };
 
-            this.WifiInfo.getMacAddress.implementation = function () {
+            WifiInfo.getMacAddress.implementation = function () {
                 const ret = this.getMacAddress();
                 log(`WifiInfo.getMacAddress: ${ret} -> 02:00:00:00:00:00`);
                 return "02:00:00:00:00:00";
             };
 
             // InetAddress
-            this.InetAddress.getHostAddress.implementation = function () {
+            InetAddress.getHostAddress.implementation = function () {
                 const ret = this.getHostAddress();
                 if (ret !== "127.0.0.1" && !ret.startsWith("192.168.") && !ret.startsWith("10.") && !ret.startsWith("172.")) {
                     log(`InetAddress.getHostAddress: ${ret} -> 8.8.8.8`);
@@ -360,7 +349,7 @@ export class Spoofing extends Hook {
                 return ret;
             };
 
-            this.InetAddress.getHostName.implementation = function () {
+            InetAddress.getHostName.implementation = function () {
                 const ret = this.getHostName();
                 const address = this.getHostAddress();
                 if (address !== "127.0.0.1" && !address.startsWith("192.168.") && !address.startsWith("10.") && !address.startsWith("172.")) {
@@ -377,14 +366,12 @@ export class Spoofing extends Hook {
     /**
      * Telephony and carrier spoofing
      */
-    telephonyHooks() {
-        const log = this.log;
-        const spoofedTelephony = this.spoofedTelephony;
+    function telephonyHooks() {
         const operator = spoofedTelephony.mcc + spoofedTelephony.mnc;
 
         try {
             // Network types
-            this.TelephonyManager.getNetworkType.overloads.forEach((overload: any) => {
+            TelephonyManager.getNetworkType.overloads.forEach((overload: any) => {
                 overload.implementation = function (...args: any) {
                     const ret = this.getNetworkType(...args);
                     log(`TelephonyManager.getNetworkType: ${ret} -> ${spoofedTelephony.networkType}`);
@@ -393,7 +380,7 @@ export class Spoofing extends Hook {
             });
 
             // Operators
-            this.TelephonyManager.getNetworkOperator.overloads.forEach((overload: any) => {
+            TelephonyManager.getNetworkOperator.overloads.forEach((overload: any) => {
                 overload.implementation = function (...args: any) {
                     const ret = this.getNetworkOperator(...args);
                     log(`TelephonyManager.getNetworkOperator: ${ret} -> ${operator}`);
@@ -401,7 +388,7 @@ export class Spoofing extends Hook {
                 };
             });
 
-            this.TelephonyManager.getNetworkOperatorName.overloads.forEach((overload: any) => {
+            TelephonyManager.getNetworkOperatorName.overloads.forEach((overload: any) => {
                 overload.implementation = function (...args: any) {
                     const ret = this.getNetworkOperatorName(...args);
                     log(`TelephonyManager.getNetworkOperatorName: ${ret} -> ${spoofedTelephony.operatorName}`);
@@ -409,7 +396,7 @@ export class Spoofing extends Hook {
                 };
             });
 
-            this.TelephonyManager.getNetworkCountryIso.overloads.forEach((overload: any) => {
+            TelephonyManager.getNetworkCountryIso.overloads.forEach((overload: any) => {
                 overload.implementation = function (...args: any) {
                     const ret = this.getNetworkCountryIso(...args);
                     log(`TelephonyManager.getNetworkCountryIso: ${ret} -> ${spoofedTelephony.countryIso}`);
@@ -417,7 +404,7 @@ export class Spoofing extends Hook {
                 };
             });
 
-            this.TelephonyManager.getSimCountryIso.overloads.forEach((overload: any) => {
+            TelephonyManager.getSimCountryIso.overloads.forEach((overload: any) => {
                 overload.implementation = function (...args: any) {
                     const ret = this.getSimCountryIso(...args);
                     log(`TelephonyManager.getSimCountryIso: ${ret} -> ${spoofedTelephony.countryIso}`);
@@ -432,13 +419,10 @@ export class Spoofing extends Hook {
     /**
      * Location and sensor spoofing
      */
-    locationSensorHooks() {
-        const log = this.log;
-        const spoofedLocation = this.spoofedLocation;
-
+    function locationSensorHooks() {
         try {
             // LocationManager
-            this.LocationManager.isProviderEnabled.overload("java.lang.String").implementation = function (provider: string) {
+            LocationManager.isProviderEnabled.overload("java.lang.String").implementation = function (provider: string) {
                 const ret = this.isProviderEnabled(provider);
                 if (provider === "gps" || provider === "network") {
                     log(`LocationManager.isProviderEnabled: ${provider} -> true`);
@@ -448,38 +432,38 @@ export class Spoofing extends Hook {
             };
 
             // Location coordinates
-            this.Location.getLatitude.implementation = function () {
+            Location.getLatitude.implementation = function () {
                 const ret = this.getLatitude();
                 log(`Location.getLatitude: ${ret} -> ${spoofedLocation.latitude}`);
                 return spoofedLocation.latitude;
             };
 
-            this.Location.getLongitude.implementation = function () {
+            Location.getLongitude.implementation = function () {
                 const ret = this.getLongitude();
                 log(`Location.getLongitude: ${ret} -> ${spoofedLocation.longitude}`);
                 return spoofedLocation.longitude;
             };
 
-            this.Location.getAltitude.implementation = function () {
+            Location.getAltitude.implementation = function () {
                 const ret = this.getAltitude();
                 log(`Location.getAltitude: ${ret} -> ${spoofedLocation.altitude}`);
                 return spoofedLocation.altitude;
             };
 
-            this.Location.getAccuracy.implementation = function () {
+            Location.getAccuracy.implementation = function () {
                 const ret = this.getAccuracy();
                 log(`Location.getAccuracy: ${ret} -> ${spoofedLocation.accuracy}`);
                 return spoofedLocation.accuracy;
             };
 
-            this.Location.getProvider.implementation = function () {
+            Location.getProvider.implementation = function () {
                 const ret = this.getProvider();
                 log(`Location.getProvider: ${ret} -> ${spoofedLocation.provider}`);
                 return spoofedLocation.provider;
             };
 
             // Sensor cleanup
-            this.Sensor.getName.implementation = function () {
+            Sensor.getName.implementation = function () {
                 const ret = this.getName();
                 if (ret.includes("Goldfish")) {
                     const spoofed = ret.replace("Goldfish ", "");
@@ -489,7 +473,7 @@ export class Spoofing extends Hook {
                 return ret;
             };
 
-            this.Sensor.getVendor.implementation = function () {
+            Sensor.getVendor.implementation = function () {
                 const ret = this.getVendor();
                 if (ret.includes("The Android Open Source Project") || ret.includes("AOSP")) {
                     const spoofed = ret.replace("The Android Open Source Project", "Sensors Inc.")
@@ -500,7 +484,7 @@ export class Spoofing extends Hook {
                 return ret;
             };
 
-            (this.Sensor.toString as any).implementation = function () {
+            (Sensor.toString as any).implementation = function () {
                 const ret = this.toString();
                 if (ret.includes("Goldfish") || ret.includes("The Android Open Source Project") || ret.includes("AOSP")) {
                     const spoofed = ret.replace(/Goldfish /g, "")
@@ -519,11 +503,7 @@ export class Spoofing extends Hook {
     /**
      * Media and WebView spoofing
      */
-    mediaHooks() {
-        const log = this.log;
-        const MediaDrm = this.MediaDrm;
-        const WebView = this.WebView;
-
+    function mediaHooks() {
         try {
             // MediaDrm
             MediaDrm.getPropertyString.implementation = function (propertyName: string) {
@@ -575,11 +555,7 @@ export class Spoofing extends Hook {
     /**
      * Intent hooks for battery spoofing and monitoring
      */
-    intentHooks() {
-        const log = this.log;
-        const spoofedBattery = this.spoofedBattery;
-        const Intent = this.Intent;
-
+    function intentHooks() {
         try {
             // Battery status spoofing
             Intent.getIntExtra.overload("java.lang.String", "int").implementation = function (name: string, defaultValue: number) {
@@ -631,12 +607,7 @@ export class Spoofing extends Hook {
     /**
      * Resources and display spoofing
      */
-    resourcesHooks() {
-        const log = this.log;
-        const spoofedTelephony = this.spoofedTelephony;
-        const Resources = this.Resources;
-        const ResourcesImpl = this.ResourcesImpl;
-
+    function resourcesHooks() {
         try {
             // Configuration spoofing for MCC/MNC
             Resources.getConfiguration.overloads.forEach((overload: any) => {
@@ -708,11 +679,7 @@ export class Spoofing extends Hook {
     /**
      * ContentResolver hooks for GSF ID spoofing
      */
-    contentResolverHooks() {
-        const log = this.log;
-        const spoofedDevice = this.spoofedDevice;
-        const ContentResolver = this.ContentResolver;
-
+    function contentResolverHooks() {
         try {
             const MatrixCursor = Java.use("android.database.MatrixCursor");
 
@@ -746,11 +713,7 @@ export class Spoofing extends Hook {
     /**
      * Settings.Secure hooks for Android ID and development settings
      */
-    settingsSecureHooks() {
-        const log = this.log;
-        const spoofedDevice = this.spoofedDevice;
-        const SettingsSecure = this.SettingsSecure;
-
+    function settingsSecureHooks() {
         try {
             // getString hooks
             SettingsSecure.getString.overload("android.content.ContentResolver", "java.lang.String").implementation = function (cr: any, name: string) {
@@ -793,10 +756,7 @@ export class Spoofing extends Hook {
     /**
      * Settings.Global hooks for system-wide settings
      */
-    settingsGlobalHooks() {
-        const log = this.log;
-        const SettingsGlobal = this.SettingsGlobal;
-
+    function settingsGlobalHooks() {
         try {
             SettingsGlobal.getInt.overload("android.content.ContentResolver", "java.lang.String", "int").implementation = function (cr: any, name: string, number: number) {
                 const ret = this.getInt(cr, name, number);
@@ -823,10 +783,7 @@ export class Spoofing extends Hook {
     /**
      * Context permission checks
      */
-    contextHooks() {
-        const log = this.log;
-        const ContextImpl = this.ContextImpl;
-
+    function contextHooks() {
         try {
             ContextImpl.checkSelfPermission.overload("java.lang.String").implementation = function (permission: string) {
                 const result = this.checkSelfPermission(permission);
@@ -849,10 +806,7 @@ export class Spoofing extends Hook {
     /**
      * Runtime utilities
      */
-    runtimeHooks() {
-        const log = this.log;
-        const UUID = this.UUID;
-
+    function runtimeHooks() {
         try {
             // UUID monitoring
             UUID.randomUUID.implementation = function () {

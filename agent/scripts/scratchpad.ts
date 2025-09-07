@@ -1,19 +1,27 @@
 import * as Utils from "../utils/functions"
 import { Logger } from "../utils/logger";
-import { Hook } from "../interfaces/hook";
 import Java from "frida-java-bridge";
 
 /**
- * Perform hooks on the system to bypass anti-debug validations.
-*/
-export class Scratchpad extends Hook {
-    NAME = "[Scratchpad]";
-    LOG_TYPE = Logger.Type.Hook;
+ * Scratchpad namespace for testing experimental hooks.
+ */
+export namespace Scratchpad {
+    const NAME = "[Scratchpad]";
+    const log = (message: string) => Logger.log(Logger.Type.Hook, NAME, message);
 
-    info(): void {
+    export function performNow(): void {
+        info()
+        try {
+            scratch();
+        } catch (error) {
+            Logger.log(Logger.Type.Error, NAME, `Hooks failed: \n${error}`);
+        }
+    }
+
+    function info(): void {
         Logger.log(
             Logger.Type.Debug,
-            this.NAME, `LogType: Hook`
+            NAME, `LogType: Hook`
             + `\n╓─┬\x1b[31m Java Classes \x1b[0m`
             + `\n║ └──\x1b[35m ? \x1b[0m`
             + `\n╟─┬\x1b[31m Native Files \x1b[0m`
@@ -22,16 +30,7 @@ export class Scratchpad extends Hook {
         );
     }
 
-    execute(): void {
-        this.info()
-        try {
-            this.scratch();
-        } catch (error) {
-            Logger.log(Logger.Type.Error, this.NAME, `Hooks failed: \n${error}`);
-        }
-    }
-
-    scratch() {
-
+    function scratch() {
+        // Add experimental hooks here
     }
 }
