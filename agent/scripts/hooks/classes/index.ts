@@ -1,0 +1,11 @@
+export { AndroidAppApplicationPackageManager as ApplicationPackageManager } from './android.app.ApplicationPackageManager';
+export { AndroidOsDebug as Debug } from './android.os.Debug';
+export { AndroidOsSystemProperties as SystemProperties } from './android.os.SystemProperties';
+export { ComAndroidOrgConscryptTrustManagerImpl as TrustManagerImpl } from './com.android.org.conscrypt.TrustManagerImpl';
+export { JavaIoBufferedReader as BufferedReader } from './java.io.BufferedReader';
+export { JavaIoFile as File } from './java.io.File';
+export { JavaLangProcessBuilder as ProcessBuilder } from './java.lang.ProcessBuilder';
+export { JavaLangRuntime as Runtime } from './java.lang.Runtime';
+export { JavaLangString as String } from './java.lang.String';
+export { JavaxNetSslSSLContext as SSLContext } from './javax.net.ssl.SSLContext';
+export { JavaxNetSslX509TrustManager as X509TrustManager } from './javax.net.ssl.X509TrustManager';
