@@ -38,50 +38,42 @@ export class Base64 extends Hook {
     decode() {
         const log = this.log;
         
-        this.Base64.decode.overloads[0].implementation = function(endString:any, flags:any){
-            var output = this.decode(endString,flags);
-            log(`Base64.decode\n - Input: ${endString}\n - Output: ${Utils.bin2ascii(output)}`);
-            return output;
-        }
-        
-        this.Base64.decode.overloads[1].implementation = function(byteString:any, flags:any){
-            var output = this.decode(byteString,flags);
-            log(`Base64.decode\n - Input: ${Utils.bin2ascii(byteString)}\n - Output: ${Utils.bin2ascii(output)}`);
-            return output;
-        }
-        
-        this.Base64.decode.overloads[2].implementation = function(byteString:any, offset:any, ln:any, flags:any){
-            var output = this.decode(byteString,offset,ln,flags);
-            log(`Base64.decode\n - Input: ${Utils.bin2ascii(byteString)}\n - Output: ${Utils.bin2ascii(output)}`);
-            return output;
-        }
+        this.Base64.decode.overloads.forEach((overload: any) => {
+            overload.implementation = function(...args: any) {
+                var output = this.decode(...args);
+                
+                // Handle different argument patterns for logging
+                if (args.length === 2) {
+                    // decode(string/byte[], flags) - args[0] could be string or byte array
+                    const input = typeof args[0] === 'string' ? args[0] : Utils.bin2ascii(args[0]);
+                    log(`Base64.decode\n - Input: ${input}\n - Output: ${Utils.bin2ascii(output)}`);
+                } else if (args.length === 4) {
+                    // decode(byte[], offset, length, flags)
+                    log(`Base64.decode\n - Input: ${Utils.bin2ascii(args[0])}\n - Output: ${Utils.bin2ascii(output)}`);
+                }
+                
+                return output;
+            };
+        });
     }
 
     encode() {
         const log = this.log;
         
-        this.Base64.encode.overloads[0].implementation = function(byteString:any, flags:any){
-            var output = this.encode(byteString,flags);
-            log(`Base64.encode\n - Input: ${Utils.bin2ascii(byteString)}\n - Output: ${Utils.bin2ascii(output)}`);
-            return output;
-        }
+        this.Base64.encode.overloads.forEach((overload: any) => {
+            overload.implementation = function(...args: any) {
+                var output = this.encode(...args);
+                log(`Base64.encode\n - Input: ${Utils.bin2ascii(args[0])}\n - Output: ${Utils.bin2ascii(output)}`);
+                return output;
+            };
+        });
         
-        this.Base64.encode.overloads[1].implementation = function(byteString:any, offset:any, ln:any, flags:any){
-            var output = this.encode(byteString,offset,ln,flags);
-            log(`Base64.encode\n - Input: ${Utils.bin2ascii(byteString)}\n - Output: ${Utils.bin2ascii(output)}`);
-            return output;
-        }
-        
-        this.Base64.encodeToString.overload('[B', 'int').implementation = function(byteString:any, flags:any){
-            var output = this.encodeToString(byteString,flags);
-            log(`Base64.encodeToString\n - Input: ${Utils.bin2ascii(byteString)}\n - Output: ${output}`);
-            return output;
-        }
-        
-        this.Base64.encodeToString.overload('[B', 'int', 'int', 'int').implementation = function(byteString:any, offset:any, ln:any, flags:any){
-            var output = this.encodeToString(byteString,offset,ln,flags);
-            log(`Base64.encodeToString\n - Input: ${Utils.bin2ascii(byteString)}\n - Output: ${output}`);
-            return output;
-        }
+        this.Base64.encodeToString.overloads.forEach((overload: any) => {
+            overload.implementation = function(...args: any) {
+                var output = this.encodeToString(...args);
+                log(`Base64.encodeToString\n - Input: ${Utils.bin2ascii(args[0])}\n - Output: ${output}`);
+                return output;
+            };
+        });
     }
 }

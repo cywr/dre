@@ -10,7 +10,7 @@ fi
 # Build the project (check if _build/index.js exists and is newer than source)
 if [ ! -f "_build/index.js" ] || [ "agent/index.ts" -nt "_build/index.js" ]; then
     echo "Building project..."
-    npm run build
+    pnpm run build
 else
     echo "Project already built, skipping..."
 fi
@@ -22,8 +22,11 @@ echo "Running frida with app: $1"
 if command -v frida &> /dev/null; then
     # Global frida installation
     frida -U -f "$1" -l _build/index.js
+elif pnpx frida --version &> /dev/null; then
+    # Local frida via pnpx
+    pnpx frida -U -f "$1" -l _build/index.js
 elif npx frida --version &> /dev/null; then
-    # Local frida via npx
+    # Local frida via npx (fallback)
     npx frida -U -f "$1" -l _build/index.js
 else
     echo "❌ Frida not found!"

@@ -2,6 +2,28 @@ import { Logger } from "../../utils/logger";
 import { Hook } from "../../interfaces/hook";
 import Java from "frida-java-bridge";
 
+enum NetworkType {
+    UNKNOWN = 0,
+    GPRS = 1,
+    EDGE = 2,
+    UMTS = 3,
+    CDMA = 4,
+    EVDO_0 = 5,
+    EVDO_A = 6,
+    RTT1x = 7,
+    HSDPA = 8,
+    HSUPA = 9,
+    HSPA = 10,
+    IDEN = 11,
+    EVDO_B = 12,
+    LTE = 13,
+    EHRPD = 14,
+    HSPAP = 15,
+    GSM = 16,
+    TD_SCDMA = 17,
+    IWLAN = 18,
+}
+
 /**
  * Comprehensive spoofing hooks to bypass detection and emulate real device characteristics.
  */
@@ -137,6 +159,7 @@ export class Spoofing extends Hook {
             this.resourcesHooks();
             this.contentResolverHooks();
             this.settingsSecureHooks();
+            this.settingsGlobalHooks();
             this.contextHooks();
             this.runtimeHooks();
         } catch (error) {
@@ -163,6 +186,7 @@ export class Spoofing extends Hook {
     private ResourcesImpl = Java.use("android.content.res.ResourcesImpl");
     private ContentResolver = Java.use("android.content.ContentResolver");
     private SettingsSecure = Java.use("android.provider.Settings$Secure");
+    private SettingsGlobal = Java.use("android.provider.Settings$Global");
     private ContextImpl = Java.use("android.app.ContextImpl");
     private UUID = Java.use("java.util.UUID");
 
@@ -763,6 +787,36 @@ export class Spoofing extends Hook {
             };
         } catch (error) {
             log(`Settings.Secure hooks failed: ${error}`);
+        }
+    }
+
+    /**
+     * Settings.Global hooks for system-wide settings
+     */
+    settingsGlobalHooks() {
+        const log = this.log;
+        const SettingsGlobal = this.SettingsGlobal;
+
+        try {
+            SettingsGlobal.getInt.overload("android.content.ContentResolver", "java.lang.String", "int").implementation = function (cr: any, name: string, number: number) {
+                const ret = this.getInt(cr, name, number);
+
+                switch (name) {
+                    case "development_settings_enabled":
+                        log(`Settings.Global.getInt: ${name} -> 0`);
+                        return 0;
+                    case "airplane_mode_on":
+                        log(`Settings.Global.getInt: ${name} -> 0`);
+                        return 0;
+                    case "mobile_data":
+                        log(`Settings.Global.getInt: ${name} -> 1`);
+                        return 1;
+                    default:
+                        return ret;
+                }
+            };
+        } catch (error) {
+            log(`Settings.Global hooks failed: ${error}`);
         }
     }
 

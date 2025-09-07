@@ -41,62 +41,39 @@ export class Cipher extends Hook {
     init() {
         const log = this.log;
         
-        this.cipher.init.overload('int', 'java.security.Key').implementation = function(mode: any, key: any) {
-            var algorithm = this.getAlgorithm();
-            var operation = "";
+        this.cipher.init.overloads.forEach((overload: any) => {
+            overload.implementation = function(...args: any) {
+                var algorithm = this.getAlgorithm();
+                var operation = "";
+                var mode = args[0];
+                var key = args[1];
 
-            if (mode == 1)
-                operation = "Encrypting";
-            else if (mode == 2)
-                operation = "Decrypting";
+                if (mode == 1)
+                    operation = "Encrypting";
+                else if (mode == 2)
+                    operation = "Decrypting";
 
-            log(
-                `Instance initialized!!!\nAlgorithm: ${algorithm}\nOperation: ${operation}\nKey\n - Hex: ${Utils.bin2hex(key.getEncoded())}\n - ASCII: ${Utils.bin2ascii(key.getEncoded())}`
-            );
-            return this.init(mode, key);
-        }
+                let logMessage = `Instance initialized!!!\nAlgorithm: ${algorithm}\nOperation: ${operation}\nKey\n - Hex: ${Utils.bin2hex(key.getEncoded())}\n - ASCII: ${Utils.bin2ascii(key.getEncoded())}`;
 
-        this.cipher.init.overload('int', 'java.security.Key', 'java.security.spec.AlgorithmParameterSpec').implementation = function(mode: any, key: any, paramsec: any) {
-            var algorithm = this.getAlgorithm();
-            var operation = "";
+                // Handle different parameter types (AlgorithmParameterSpec, AlgorithmParameters, etc.)
+                if (args.length >= 3 && args[2]) {
+                    try {
+                        var param = Java.cast(args[2], Java.use('javax.crypto.spec.IvParameterSpec'));
+                        logMessage += `\nIV\n - Hex: ${Utils.bin2hex(param.getIV())}`;
+                    } catch (error) {
+                        try {
+                            var param = Java.cast(args[2], Java.use('javax.crypto.spec.GCMParameterSpec'));
+                            logMessage += `\nIV\n - Hex: ${Utils.bin2hex(param.getIV())}`;
+                        } catch (error2) {
+                            // Other parameter types - skip IV logging
+                        }
+                    }
+                }
 
-            try {
-                var param = Java.cast(paramsec, Java.use('javax.crypto.spec.IvParameterSpec'));    
-            } catch (error) {
-                var param = Java.cast(paramsec, Java.use('javax.crypto.spec.GCMParameterSpec'));
-            }
-
-            if (mode == 1)
-                operation = "Encrypting";
-            else if (mode == 2)
-                operation = "Decrypting";
-
-            log( 
-                `Instance initialized!!!\nAlgorithm: ${algorithm}\nOperation: ${operation}\nKey\n - Hex: ${Utils.bin2hex(key.getEncoded())}\n - ASCII: ${Utils.bin2ascii(key.getEncoded())}\nIV\n - Hex: ${Utils.bin2hex(param.getIV())}`
-            );
-            return this.init(mode, key, paramsec);
-        }
-
-        this.cipher.init.overload('int', 'java.security.Key', 'java.security.AlgorithmParameters', 'java.security.SecureRandom').implementation = function(mode: any, key: any, paramsec: any) {
-            var algorithm = this.getAlgorithm();
-            var operation = "";
-
-            try {
-                var param = Java.cast(paramsec, Java.use('javax.crypto.spec.IvParameterSpec'));    
-            } catch (error) {
-                var param = Java.cast(paramsec, Java.use('javax.crypto.spec.GCMParameterSpec'));
-            }
-
-            if (mode == 1)
-                operation = "Encrypting";
-            else if (mode == 2)
-                operation = "Decrypting";
-
-            log( 
-                `Instance initialized!!!\nAlgorithm: ${algorithm}\nOperation: ${operation}\nKey\n - Hex: ${Utils.bin2hex(key.getEncoded())}\n - ASCII: ${Utils.bin2ascii(key.getEncoded())}\nIV\n - Hex: ${Utils.bin2hex(param.getIV())}`
-            );
-            return this.init(mode, key, paramsec);
-        }
+                log(logMessage);
+                return this.init(...args);
+            };
+        });
     }
 
     /**
@@ -105,79 +82,23 @@ export class Cipher extends Hook {
     final() {
         const log = this.log;
         
-        this.cipher.doFinal.overload('[B').implementation = function (inputByteArray: number[]) {
-            var outputByteArray = this.doFinal(inputByteArray);
+        this.cipher.doFinal.overloads.forEach((overload: any) => {
+            overload.implementation = function(...args: any) {
+                var outputByteArray = this.doFinal(...args);
 
-            var inputHex = Utils.bin2hex(inputByteArray);
-            var inputAscii = Utils.bin2ascii(inputByteArray);
-            var outputHex = Utils.bin2hex(outputByteArray);
-            var outputAscii = Utils.bin2ascii(outputByteArray);
+                // Extract input byte array (always first argument)
+                var inputByteArray = args[0];
+                var inputHex = Utils.bin2hex(inputByteArray);
+                var inputAscii = Utils.bin2ascii(inputByteArray);
+                var outputHex = Utils.bin2hex(outputByteArray);
+                var outputAscii = Utils.bin2ascii(outputByteArray);
 
-            log( 
-                `Execution!!!\nInput\n - Hex: ${inputHex}\n - ASCII: ${inputAscii}\nOutput\n - Hex: ${outputHex}\n - ASCII: ${outputAscii}`
-            );
+                log( 
+                    `Execution!!!\nInput\n - Hex: ${inputHex}\n - ASCII: ${inputAscii}\nOutput\n - Hex: ${outputHex}\n - ASCII: ${outputAscii}`
+                );
 
-            return outputByteArray;
-        }
-
-        this.cipher.doFinal.overload('[B', 'int').implementation = function (inputByteArray: number[], outputOffset: any) {
-            var outputByteArray = this.doFinal(inputByteArray, outputOffset);
-
-            var inputHex = Utils.bin2hex(inputByteArray);
-            var inputAscii = Utils.bin2ascii(inputByteArray);
-            var outputHex = Utils.bin2hex(outputByteArray);
-            var outputAscii = Utils.bin2ascii(outputByteArray);
-
-            log( 
-                `Execution!!!\nInput\n - Hex: ${inputHex}\n - ASCII: ${inputAscii}\nOutput\n - Hex: ${outputHex}\n - ASCII: ${outputAscii}`
-            );
-
-            return outputByteArray;
-        }
-
-        this.cipher.doFinal.overload('[B', 'int', 'int').implementation = function (inputByteArray: number[], outputOffset: number, inputlen: number) {
-            var outputByteArray = this.doFinal(inputByteArray, outputOffset, inputlen);
-
-            var inputHex = Utils.bin2hex(inputByteArray);
-            var inputAscii = Utils.bin2ascii(inputByteArray);
-            var outputHex = Utils.bin2hex(outputByteArray);
-            var outputAscii = Utils.bin2ascii(outputByteArray);
-
-            log( 
-                `Execution!!!\nInput\n - Hex: ${inputHex}\n - ASCII: ${inputAscii}\nOutput\n - Hex: ${outputHex}\n - ASCII: ${outputAscii}`
-            );
-
-            return outputByteArray;
-        }
-
-        this.cipher.doFinal.overload('[B', 'int', 'int', '[B').implementation = function (inputByteArray: number[], outputOffset: number, inputlen: number, output: number[]) {
-            var outputByteArray = this.doFinal(inputByteArray, outputOffset, inputlen, output);
-
-            var inputHex = Utils.bin2hex(inputByteArray);
-            var inputAscii = Utils.bin2ascii(inputByteArray);
-            var outputHex = Utils.bin2hex(outputByteArray);
-            var outputAscii = Utils.bin2ascii(outputByteArray);
-
-            log( 
-                `Execution!!!\nInput\n - Hex: ${inputHex}\n - ASCII: ${inputAscii}\nOutput\n - Hex: ${outputHex}\n - ASCII: ${outputAscii}`
-            );
-
-            return outputByteArray;
-        }
-
-        this.cipher.doFinal.overload('[B', 'int', 'int', '[B', 'int').implementation = function (inputByteArray: number[], outputOffset: number, inputlen: number, output: number[], outoffset: number) {
-            var outputByteArray = this.doFinal(inputByteArray, outputOffset, inputlen, output, outoffset);
-
-            var inputHex = Utils.bin2hex(inputByteArray);
-            var inputAscii = Utils.bin2ascii(inputByteArray);
-            var outputHex = Utils.bin2hex(outputByteArray);
-            var outputAscii = Utils.bin2ascii(outputByteArray);
-
-            log( 
-                `Execution!!!\nInput\n - Hex: ${inputHex}\n - ASCII: ${inputAscii}\nOutput\n - Hex: ${outputHex}\n - ASCII: ${outputAscii}`
-            );
-
-            return outputByteArray;
-        }
+                return outputByteArray;
+            };
+        });
     }
 }

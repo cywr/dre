@@ -7,6 +7,8 @@ Dynamic Reverse Engineering tool with configurable logging system.
 You need to install Frida globally:
 ```bash
 # Install frida-tools globally
+pnpm add -g @frida/tools
+# or
 npm install -g @frida/tools
 # or
 pip install frida-tools
@@ -19,13 +21,13 @@ pip install frida-tools
 # Using the shell script directly (RECOMMENDED)
 ./run.sh <package-name>
 
-# Using npm/pnpm with shell script
+# Using pnpm/npm with shell script
 pnpm run start <package-name>
 # or
 npm run start <package-name>
 
 # Manual command (if scripts don't work)
-npm run build
+pnpm run build
 frida -U -f <package-name> -l _build/index.js
 ```
 
@@ -37,8 +39,8 @@ frida -U -f <package-name> -l _build/index.js
 ## Troubleshooting
 
 If you get "frida: command not found":
-1. Install frida globally: `npm install -g @frida/tools`
-2. Or use manual command: `npm run build && frida -U -f <app> -l _build/index.js`
+1. Install frida globally: `pnpm add -g @frida/tools` or `npm install -g @frida/tools`
+2. Or use manual command: `pnpm run build && frida -U -f <app> -l _build/index.js`
 
 ## Log Level Configuration
 
@@ -63,11 +65,11 @@ Available options:
 
 ## Manual Testing
 After changing the log level:
-1. Run `npm run build` to compile
+1. Run `pnpm run build` to compile
 2. Observe the different amount of log output based on your setting
 
 ## Build Commands
 ```bash
-npm run lint    # TypeScript compilation check
-npm run build   # Compile Frida script
+pnpm run lint    # TypeScript compilation check
+pnpm run build   # Compile Frida script
 ```
