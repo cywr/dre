@@ -15,6 +15,60 @@ export namespace AndroidContentIntent {
         plugType: 1 // BATTERY_PLUGGED_AC
     };
 
+    /**
+     * Check if an intent is relevant and should be handled specially.
+     */
+    function isRelevantIntent(action: string, pkg: string, data: string): boolean {
+        let isRelevant = false;
+        if (pkg && pkg === "com.google.android.apps.maps") {
+            isRelevant = true;
+        }
+        if (data && (data.startsWith("waze://?ll=") || data.startsWith("tel:"))) {
+            isRelevant = true;
+        }
+        if (action && action.startsWith("android.intent.action.DIAL")) {
+            isRelevant = true;
+        }
+        return isRelevant;
+    }
+
+    /**
+     * Handle relevant intents for logging and analysis.
+     */
+    export function handleIntent(intent: any): boolean {
+        try {
+            const action = intent.getAction();
+            const pkg = intent.getPackage();
+            const data = intent.getDataString();
+            let extrasString = "";
+            const isIntentRelevant = isRelevantIntent(action, pkg, data);
+
+            if (isIntentRelevant) {
+                log("Relevant intent detected, logging details...");
+                const extras = intent.getExtras();
+                if (extras) {
+                    try {
+                        const keys = extras.keySet();
+                        const iterator = keys.iterator();
+                        while (iterator.hasNext()) {
+                            const key = iterator.next().toString();
+                            extrasString += intent.getStringExtra(key);
+                        }
+                    } catch (error) {
+                        log(`Problem iterating extras: ${error}`);
+                    }
+                }
+                
+                log(`Intent details - Action: ${action}, Package: ${pkg}, Data: ${data}, Extras: ${extrasString}`);
+            }
+
+            return isIntentRelevant;
+        } catch (error) {
+            log(`handleIntent error: ${error}`);
+            return false;
+        }
+    }
+
     export function performNow(): void {
         try {
             const Intent = Java.use("android.content.Intent");
@@ -48,13 +102,8 @@ export namespace AndroidContentIntent {
             Intent.resolveActivity.overloads.forEach((overload: any) => {
                 overload.implementation = function (...args: any) {
                     try {
-                        const action = this.getAction();
-                        const pkg = this.getPackage();
-                        const data = this.getDataString();
-
-                        if (action || pkg || data) {
-                            log(`Intent.resolveActivity: ${action || 'no-action'} | ${pkg || 'no-pkg'} | ${data || 'no-data'}`);
-                        }
+                        log(`Intent.resolveActivity called`);
+                        handleIntent(this);
                     } catch (error) {
                         log(`Intent.resolveActivity monitoring error: ${error}`);
                     }

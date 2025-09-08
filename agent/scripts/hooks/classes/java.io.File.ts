@@ -64,9 +64,24 @@ export namespace JavaIoFile {
         "/system/xbin/su": {
             exists: false
         },
+        "/etc/security/otacerts.zip": {
+            exists: true
+        }
     };
 
     export function performNow(): void {
+        try {
+            antiRoot();
+            monitorFiles();
+        } catch (error) {
+            Logger.log(Logger.Type.Error, NAME, `Hook failed: ${error}`);
+        }
+    }
+
+    /**
+     * Preventing application from using File System to validate rooting access permissions.
+     */
+    function antiRoot(): void {
         try {
             const File = Java.use("java.io.File");
             
@@ -109,7 +124,55 @@ export namespace JavaIoFile {
                 }
             };
         } catch (error) {
-            Logger.log(Logger.Type.Error, NAME, `Hook failed: ${error}`);
+            Logger.log(Logger.Type.Error, NAME, `antiRoot failed: ${error}`);
+        }
+    }
+
+    /**
+     * Monitor file operations for debugging and analysis purposes.
+     */
+    function monitorFiles(): void {
+        try {
+            const File = Java.use("java.io.File");
+            const FileInputStream = Java.use("java.io.FileInputStream");
+
+            try {
+                const fileConstr1 = File.$init.overload("java.lang.String");
+                fileConstr1.implementation = function (a0: any) {
+                    log(`New file (1): ${a0}`);
+                    return fileConstr1.call(this, a0);
+                };
+            } catch (error) {
+                Logger.log(Logger.Type.Error, NAME, `New file (1) failed: ${error}`);
+            }
+
+            try {
+                const fileConstr2 = File.$init.overload("java.lang.String", "java.lang.String");
+                fileConstr2.implementation = function (a0: any, a1: any) {
+                    log(`New file (2): ${a0}/${a1}`);
+                    return fileConstr2.call(this, a0, a1);
+                };
+            } catch (error) {
+                Logger.log(Logger.Type.Error, NAME, `New file (2) failed: ${error}`);
+            }
+
+            try {
+                const fileInputStreamConstr = FileInputStream.$init.overload("java.io.File");
+                fileInputStreamConstr.implementation = function (a0: any) {
+                    try {
+                        const file = Java.cast(a0, File);
+                        const path = file.getAbsolutePath();
+                        log(`New FileInputStream: ${path}`);
+                    } catch (error) {
+                        log(`New FileInputStream (couldn't read filepath)`);
+                    }
+                    return fileInputStreamConstr.call(this, a0);
+                };
+            } catch (error) {
+                Logger.log(Logger.Type.Error, NAME, `New FileInputStream failed: ${error}`);
+            }
+        } catch (error) {
+            Logger.log(Logger.Type.Error, NAME, `monitorFiles failed: ${error}`);
         }
     }
 }

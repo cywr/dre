@@ -14,7 +14,8 @@ export namespace AndroidTelephonyTelephonyManager {
         operatorName: "T-Mobile",
         countryIso: "us",
         simState: 5,
-        networkType: 13
+        networkType: 13, // LTE
+        dataNetworkType: 13 // LTE
     };
 
     export function performNow(): void {
@@ -28,6 +29,14 @@ export namespace AndroidTelephonyTelephonyManager {
                     const ret = this.getNetworkType(...args);
                     log(`TelephonyManager.getNetworkType: ${ret} -> ${spoofedTelephony.networkType}`);
                     return spoofedTelephony.networkType;
+                };
+            });
+
+            TelephonyManager.getDataNetworkType.overloads.forEach((overload: any) => {
+                overload.implementation = function (...args: any) {
+                    const ret = this.getDataNetworkType(...args);
+                    log(`TelephonyManager.getDataNetworkType: ${ret} -> ${spoofedTelephony.dataNetworkType}`);
+                    return spoofedTelephony.dataNetworkType;
                 };
             });
 
@@ -48,6 +57,23 @@ export namespace AndroidTelephonyTelephonyManager {
                 };
             });
 
+            // SIM Operator methods
+            TelephonyManager.getSimOperator.overloads.forEach((overload: any) => {
+                overload.implementation = function (...args: any) {
+                    const ret = this.getSimOperator(...args);
+                    log(`TelephonyManager.getSimOperator: ${ret} -> ${operator}`);
+                    return operator;
+                };
+            });
+
+            TelephonyManager.getSimOperatorName.overloads.forEach((overload: any) => {
+                overload.implementation = function (...args: any) {
+                    const ret = this.getSimOperatorName(...args);
+                    log(`TelephonyManager.getSimOperatorName: ${ret} -> ${spoofedTelephony.operatorName}`);
+                    return spoofedTelephony.operatorName;
+                };
+            });
+
             TelephonyManager.getNetworkCountryIso.overloads.forEach((overload: any) => {
                 overload.implementation = function (...args: any) {
                     const ret = this.getNetworkCountryIso(...args);
@@ -61,6 +87,15 @@ export namespace AndroidTelephonyTelephonyManager {
                     const ret = this.getSimCountryIso(...args);
                     log(`TelephonyManager.getSimCountryIso: ${ret} -> ${spoofedTelephony.countryIso}`);
                     return spoofedTelephony.countryIso;
+                };
+            });
+
+            // SIM State
+            TelephonyManager.getSimState.overloads.forEach((overload: any) => {
+                overload.implementation = function (...args: any) {
+                    const ret = this.getSimState(...args);
+                    log(`TelephonyManager.getSimState: ${ret} -> ${spoofedTelephony.simState}`);
+                    return spoofedTelephony.simState;
                 };
             });
         } catch (error) {
