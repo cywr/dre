@@ -27,11 +27,11 @@ pnpm run owasp.mstg.uncrackable1  # Test against OWASP UnCrackable Level 1
 This is a **Frida-based anti-emulation bypass framework** for Android reverse engineering and security testing.
 
 ### Core Structure
-- **`agent/index.ts`**: Main entry point that initializes hooks and configures logging
-- **`agent/interfaces/hook.ts`**: Abstract Hook class that all bypass modules extend
-- **`agent/scripts/system/`**: Individual bypass modules for different Android security mechanisms
-- **`agent/utils/logger.ts`**: Centralized logging system with configurable verbosity levels
-- **`agent/scripts/modules.ts`**: Module exports aggregator
+- **`source/index.ts`**: Main entry point that initializes hooks and configures logging
+- **`source/interfaces/hook.ts`**: Abstract Hook class that all bypass modules extend
+- **`source/scripts/system/`**: Individual bypass modules for different Android security mechanisms
+- **`source/utils/logger.ts`**: Centralized logging system with configurable verbosity levels
+- **`source/scripts/modules.ts`**: Module exports aggregator
 
 ### Hook System
 All bypass functionality is implemented as Hook classes extending the abstract Hook base class. Each hook must implement:
@@ -50,7 +50,7 @@ All bypass functionality is implemented as Hook classes extending the abstract H
 - **SharedPreferencesWatcher**: Monitor Android SharedPreferences access
 
 ### Logging System
-Configure logging verbosity in `agent/index.ts` by setting `logLevel`:
+Configure logging verbosity in `source/index.ts` by setting `logLevel`:
 - `Logger.LogLevel.ERROR` (0): Only errors
 - `Logger.LogLevel.INFO` (1): Default level - info, config, hook, and error messages
 - `Logger.LogLevel.DEBUG` (2): Debug messages + INFO level

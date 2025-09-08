@@ -12,9 +12,9 @@
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["agent/"],
+  "include": ["source/"],
   "baseUrl": ".",
   "paths": {
-    "@agent/*": ["agent/*"]
+    "@source/*": ["source/*"]
   }
 }

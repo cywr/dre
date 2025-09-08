@@ -8,7 +8,7 @@ if [ $# -eq 0 ]; then
 fi
 
 # Build the project (check if _build/index.js exists and is newer than source)
-if [ ! -f "_build/index.js" ] || [ "agent/index.ts" -nt "_build/index.js" ]; then
+if [ ! -f "_build/index.js" ] || [ "source/index.ts" -nt "_build/index.js" ]; then
     echo "Building project..."
     pnpm run build
 else

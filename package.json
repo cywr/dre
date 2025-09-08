@@ -2,7 +2,7 @@
   "name": "testing",
   "version": "0.0.1",
   "description": "",
-  "main": "agent/index.ts",
+  "main": "source/index.ts",
   "authors": [
     {
       "name": "Cynychwr",
@@ -12,7 +12,7 @@
   "private": true,
   "scripts": {
     "lint": "tsc",
-    "build": "frida-compile agent/index.ts -o _build/index.js -c",
+    "build": "frida-compile source/index.ts -o _build/index.js -c",
     "start": "./run.sh",
     "frida:direct": "pnpm run build && pnpx frida -U -f",
     "owasp.mstg.uncrackable1": "pnpm run build && pnpx frida -U -f owasp.mstg.uncrackable1 -l _build/index.js"
