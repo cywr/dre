@@ -1,4 +1,5 @@
-import * as Scripts from "./scripts";
+import * as Hooks from "./hooks";
+import { Scratchpad } from "./scratchpad";
 import { Logger } from "./utils/logger";
 import Java from "frida-java-bridge";
 
@@ -34,12 +35,12 @@ if (Java.available) {
         console.log("\x1b[34m╚═════════════════════════════════════════════════════╝\x1b[0m");
 
         // Execute comprehensive modular hook structure
-        Scripts.Cloaking.performNow();      // Complete anti-detection bypass (root, debug, SSL, spoofing)
-        Scripts.DevTools.performNow();      // Analysis tools (cipher, base64)
-        Scripts.Monitoring.performNow();    // Monitoring tools (SharedPreferences)
+        Hooks.Cloaking.performNow();      // Complete anti-detection bypass (root, debug, SSL, spoofing)
+        Hooks.DevTools.performNow();      // Analysis tools (cipher, base64)
+        Hooks.Monitoring.performNow();    // Monitoring tools (SharedPreferences)
 
         // Legacy experimental hooks
-        Scripts.Scratchpad.performNow();
+        Scratchpad.performNow();
 
         console.log("\x1b[32m╓─────────────────────── LOGS ────────────────────────╖\x1b[0m");
         console.log("\x1b[32m╚═════════════════════════════════════════════════════╝\x1b[0m");
