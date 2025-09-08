@@ -1,5 +1,4 @@
-import { log } from "console";
-import * as Scripts from "./scripts/modules";
+import * as Scripts from "./scripts";
 import { Logger } from "./utils/logger";
 import Java from "frida-java-bridge";
 

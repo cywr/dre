@@ -1,4 +1,5 @@
 import { Logger } from "../../../utils/logger";
+import { DRM_UUIDS } from "../../../utils/enums";
 import Java from "frida-java-bridge";
 
 /**
@@ -32,9 +33,9 @@ export namespace UUID {
                          * Replace Widevine CDM UUID with ClearKey CDM UUID
                          * This works with MediaDrm hooks to return a fake unique device ID.
                          */
-                        case "edef8ba9-79d6-4ace-a3c8-27dcd51d21ed":
+                        case DRM_UUIDS.WIDEVINE:
                             log(`fromString(${data}) -> Returning ClearKey CDM UUID instead of Widevine CDM UUID`);
-                            return this.fromString("1077efec-c0b2-4d02-ace3-3c1e52e2fb4b");
+                            return this.fromString(DRM_UUIDS.CLEARKEY);
                         default:
                             break;
                     }

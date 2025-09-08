@@ -1,4 +1,5 @@
 import { Logger } from "../../../utils/logger";
+import { SENSOR_VENDOR_REPLACEMENTS } from "../../../utils/enums";
 import Java from "frida-java-bridge";
 
 /**
@@ -89,7 +90,11 @@ export namespace SensorManager {
                 try {
                     Sensor.getName.implementation = function () {
                         const name = this.getName();
-                        const spoof = name.replace(/Goldfish /g, "");
+                        let spoof = name;
+                        
+                        for (const [pattern, replacement] of Object.entries(SENSOR_VENDOR_REPLACEMENTS)) {
+                            spoof = spoof.replace(new RegExp(pattern, 'g'), replacement);
+                        }
 
                         log(`getName: ${name} -> ${spoof}`);
                         return spoof;
@@ -101,10 +106,11 @@ export namespace SensorManager {
                 try {
                     (Sensor.toString as any).implementation = function () {
                         const name = this.toString();
-                        const spoof = name
-                            .replace(/Goldfish /g, "")
-                            .replace(/The Android Open Source Project/g, "AMS")
-                            .replace(/AOSP/g, "AMS");
+                        let spoof = name;
+                        
+                        for (const [pattern, replacement] of Object.entries(SENSOR_VENDOR_REPLACEMENTS)) {
+                            spoof = spoof.replace(new RegExp(pattern, 'g'), replacement);
+                        }
 
                         log(`toString: ${name} -> ${spoof}`);
                         return spoof;
@@ -116,9 +122,13 @@ export namespace SensorManager {
                 try {
                     Sensor.getVendor.implementation = function () {
                         const vendor = this.getVendor();
-                        const spoof = vendor
-                            .replace(/The Android Open Source Project/g, "AMS")
-                            .replace(/AOSP/g, "AMS");
+                        let spoof = vendor;
+                        
+                        for (const [pattern, replacement] of Object.entries(SENSOR_VENDOR_REPLACEMENTS)) {
+                            if (pattern !== "Goldfish ") { // Skip Goldfish replacement for vendor
+                                spoof = spoof.replace(new RegExp(pattern, 'g'), replacement);
+                            }
+                        }
 
                         log(`getVendor: ${vendor} -> ${spoof}`);
                         return spoof;

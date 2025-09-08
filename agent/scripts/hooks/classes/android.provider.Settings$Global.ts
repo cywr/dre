@@ -1,4 +1,5 @@
 import { Logger } from "../../../utils/logger";
+import { DEFAULT_GLOBAL_SETTINGS } from "../../../utils/types";
 import Java from "frida-java-bridge";
 
 /**
@@ -17,14 +18,26 @@ export namespace SettingsGlobal {
 
                 switch (name) {
                     case "development_settings_enabled":
-                        log(`Settings.Global.getInt: ${name} -> 0`);
-                        return 0;
-                    case "airplane_mode_on":
-                        log(`Settings.Global.getInt: ${name} -> 0`);
-                        return 0;
+                        log(`Settings.Global.getInt: ${name} -> ${DEFAULT_GLOBAL_SETTINGS.development_settings_enabled}`);
+                        return DEFAULT_GLOBAL_SETTINGS.development_settings_enabled;
+                    case "adb_enabled":
+                        log(`Settings.Global.getInt: ${name} -> ${DEFAULT_GLOBAL_SETTINGS.adb_enabled}`);
+                        return DEFAULT_GLOBAL_SETTINGS.adb_enabled;
+                    case "auto_time":
+                        log(`Settings.Global.getInt: ${name} -> ${DEFAULT_GLOBAL_SETTINGS.auto_time}`);
+                        return DEFAULT_GLOBAL_SETTINGS.auto_time;
+                    case "auto_time_zone":
+                        log(`Settings.Global.getInt: ${name} -> ${DEFAULT_GLOBAL_SETTINGS.auto_time_zone}`);
+                        return DEFAULT_GLOBAL_SETTINGS.auto_time_zone;
+                    case "stay_on_while_plugged_in":
+                        log(`Settings.Global.getInt: ${name} -> ${DEFAULT_GLOBAL_SETTINGS.stay_on_while_plugged_in}`);
+                        return DEFAULT_GLOBAL_SETTINGS.stay_on_while_plugged_in;
                     case "mobile_data":
-                        log(`Settings.Global.getInt: ${name} -> 1`);
-                        return 1;
+                        log(`Settings.Global.getInt: ${name} -> ${DEFAULT_GLOBAL_SETTINGS.mobile_data}`);
+                        return DEFAULT_GLOBAL_SETTINGS.mobile_data;
+                    case "airplane_mode_on":
+                        log(`Settings.Global.getInt: ${name} -> ${DEFAULT_GLOBAL_SETTINGS.airplane_mode_on}`);
+                        return DEFAULT_GLOBAL_SETTINGS.airplane_mode_on;
                     default:
                         return ret;
                 }
