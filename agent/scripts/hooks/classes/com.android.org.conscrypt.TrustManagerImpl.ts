@@ -4,7 +4,7 @@ import Java from "frida-java-bridge";
 /**
  * Hook for com.android.org.conscrypt.TrustManagerImpl class to bypass Android's internal trust manager.
  */
-export namespace ComAndroidOrgConscryptTrustManagerImpl {
+export namespace TrustManagerImpl {
     const NAME = "[TrustManagerImpl]";
     const log = (message: string) => Logger.log(Logger.Type.Hook, NAME, message);
 

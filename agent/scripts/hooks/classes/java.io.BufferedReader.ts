@@ -4,7 +4,7 @@ import Java from "frida-java-bridge";
 /**
  * Hook for java.io.BufferedReader class to bypass test-keys detection.
  */
-export namespace JavaIoBufferedReader {
+export namespace BufferedReader {
     const NAME = "[BufferedReader]";
     const log = (message: string) => Logger.log(Logger.Type.Debug, NAME, message);
 

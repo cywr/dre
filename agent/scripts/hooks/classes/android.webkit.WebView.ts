@@ -4,7 +4,7 @@ import Java from "frida-java-bridge";
 /**
  * Hook for android.webkit.WebView class to spoof user agent strings.
  */
-export namespace AndroidWebkitWebView {
+export namespace WebView {
     const NAME = "[WebView]";
     const log = (message: string) => Logger.log(Logger.Type.Verbose, NAME, message);
 

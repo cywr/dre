@@ -4,7 +4,7 @@ import Java from "frida-java-bridge";
 /**
  * Hook for java.lang.String class to bypass string-based detection.
  */
-export namespace JavaLangString {
+export namespace String {
     const NAME = "[String]";
     const log = (message: string) => Logger.log(Logger.Type.Debug, NAME, message);
 

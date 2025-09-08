@@ -4,7 +4,7 @@ import Java from "frida-java-bridge";
 /**
  * Hook for android.content.ContentResolver class to spoof content queries, particularly GSF ID.
  */
-export namespace AndroidContentContentResolver {
+export namespace ContentResolver {
     const NAME = "[ContentResolver]";
     const log = (message: string) => Logger.log(Logger.Type.Verbose, NAME, message);
 

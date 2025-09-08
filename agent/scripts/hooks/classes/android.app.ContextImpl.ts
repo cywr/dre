@@ -4,7 +4,7 @@ import Java from "frida-java-bridge";
 /**
  * Hook for android.app.ContextImpl class to monitor permission checks.
  */
-export namespace AndroidAppContextImpl {
+export namespace ContextImpl {
     const NAME = "[ContextImpl]";
     const log = (message: string) => Logger.log(Logger.Type.Verbose, NAME, message);
 

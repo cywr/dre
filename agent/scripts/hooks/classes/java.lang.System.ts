@@ -4,7 +4,7 @@ import Java from "frida-java-bridge";
 /**
  * Hook for java.lang.System class to manage system properties and library loading.
  */
-export namespace JavaLangSystem {
+export namespace System {
     const NAME = "[System]";
     const log = (message: string) => Logger.log(Logger.Type.Debug, NAME, message);
     const verboseLog = (message: string) => Logger.log(Logger.Type.Verbose, NAME, message);

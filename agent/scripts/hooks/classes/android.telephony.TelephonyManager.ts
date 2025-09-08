@@ -4,7 +4,7 @@ import Java from "frida-java-bridge";
 /**
  * Hook for android.telephony.TelephonyManager class to spoof telephony and carrier information.
  */
-export namespace AndroidTelephonyTelephonyManager {
+export namespace TelephonyManager {
     const NAME = "[TelephonyManager]";
     const log = (message: string) => Logger.log(Logger.Type.Verbose, NAME, message);
 

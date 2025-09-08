@@ -4,7 +4,7 @@ import Java from "frida-java-bridge";
 /**
  * Hook for android.content.Intent class to spoof battery information and monitor intents.
  */
-export namespace AndroidContentIntent {
+export namespace Intent {
     const NAME = "[Intent]";
     const log = (message: string) => Logger.log(Logger.Type.Verbose, NAME, message);
 

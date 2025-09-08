@@ -21,7 +21,7 @@ enum Type {
 /**
  * Hook for android.app.SharedPreferencesImpl$EditorImpl class to monitor SharedPreferences editing.
  */
-export namespace AndroidAppSharedPreferencesImplEditorImpl {
+export namespace SharedPreferencesImplEditorImpl {
     const NAME = "[SharedPreferencesImpl.EditorImpl]";
     const log = (message: string) => Logger.log(Logger.Type.Hook, NAME, message);
 

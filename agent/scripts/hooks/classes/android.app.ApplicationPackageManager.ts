@@ -4,7 +4,7 @@ import Java from "frida-java-bridge";
 /**
  * Hook for android.app.ApplicationPackageManager class to bypass package detection.
  */
-export namespace AndroidAppApplicationPackageManager {
+export namespace ApplicationPackageManager {
     const NAME = "[PackageManager]";
     const log = (message: string) => Logger.log(Logger.Type.Debug, NAME, message);
 

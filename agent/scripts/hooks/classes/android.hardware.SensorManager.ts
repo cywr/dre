@@ -4,7 +4,7 @@ import Java from "frida-java-bridge";
 /**
  * Hook for android.hardware.SensorManager class to manage sensor detection and emulation bypass.
  */
-export namespace AndroidHardwareSensorManager {
+export namespace SensorManager {
     const NAME = "[SensorManager]";
     const log = (message: string) => Logger.log(Logger.Type.Debug, NAME, message);
     const verboseLog = (message: string) => Logger.log(Logger.Type.Verbose, NAME, message);

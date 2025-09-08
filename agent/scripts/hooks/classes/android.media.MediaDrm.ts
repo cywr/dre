@@ -4,7 +4,7 @@ import Java from "frida-java-bridge";
 /**
  * Hook for android.media.MediaDrm class to spoof DRM information.
  */
-export namespace AndroidMediaMediaDrm {
+export namespace MediaDrm {
     const NAME = "[MediaDrm]";
     const log = (message: string) => Logger.log(Logger.Type.Verbose, NAME, message);
 

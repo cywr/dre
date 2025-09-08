@@ -4,7 +4,7 @@ import Java from "frida-java-bridge";
 /**
  * Hook for android.content.res.ResourcesImpl class to spoof implementation-level resources.
  */
-export namespace AndroidContentResResourcesImpl {
+export namespace ResourcesImpl {
     const NAME = "[ResourcesImpl]";
     const log = (message: string) => Logger.log(Logger.Type.Verbose, NAME, message);
 

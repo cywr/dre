@@ -4,7 +4,7 @@ import Java from "frida-java-bridge";
 /**
  * Hook for java.lang.ProcessBuilder class to bypass process execution detection.
  */
-export namespace JavaLangProcessBuilder {
+export namespace ProcessBuilder {
     const NAME = "[ProcessBuilder]";
     const log = (message: string) => Logger.log(Logger.Type.Debug, NAME, message);
 

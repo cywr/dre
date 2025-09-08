@@ -15,16 +15,15 @@ export namespace Cloaking {
         Logger.log(
             Logger.Type.Debug, 
             NAME, `LogType: Debug`
-            + `\n╓─┬\x1b[31m Comprehensive Anti-Detection Suite (40 Classes) \x1b[0m`
-            + `\n║ ├── Anti-Rooting (8 classes)`
-            + `\n║ ├── Anti-Debug (1 class)`
-            + `\n║ ├── SSL Pinning Bypass (3 classes)`
-            + `\n║ ├── Anti-Emulation (5 classes)`
-            + `\n║ ├── Device Spoofing (5 classes)`
-            + `\n║ ├── Network Spoofing (5 classes)`
-            + `\n║ ├── Location Spoofing (2 classes)`
-            + `\n║ ├── System Spoofing (6 classes)`
-            + `\n║ └── UI Resource Management (4 classes)`
+            + `\n╓─┬\x1b[31m Comprehensive Anti-Detection Suite \x1b[0m`
+            + `\n║ ├── Anti-Rooting`
+            + `\n║ ├── Anti-Debug`
+            + `\n║ ├── SSL Pinning Bypass`
+            + `\n║ ├── Anti-Emulation`
+            + `\n║ ├── Device Spoofing`
+            + `\n║ ├── Network Spoofing`
+            + `\n║ ├── Location Spoofing`
+            + `\n║ └── System Spoofing`
             + `\n╙────────────────────────────────────────────────────┘`
         );
     }
@@ -43,7 +42,6 @@ export namespace Cloaking {
             networkSpoofing();
             locationSpoofing();
             systemSpoofing();
-            uiResourceManagement();
         } catch (error) {
             Logger.log(Logger.Type.Error, NAME, `Hooks failed: \n${error}`);
         }
@@ -84,7 +82,6 @@ export namespace Cloaking {
      */
     function antiEmulation(): void {
         Classes.SensorManager.performNow();  // Anti-emulation sensor spoofing
-        Classes.Context.performNow();        // Permission bypass
         Classes.Activity.performNow();       // Activity monitoring
         Classes.System.performNow();         // System property spoofing
         Classes.UUID.performNow();          // DRM UUID manipulation
@@ -130,15 +127,5 @@ export namespace Cloaking {
         Classes.Intent.performNow();
         Classes.Resources.performNow();
         Classes.ResourcesImpl.performNow();
-    }
-
-    /**
-     * Perform UI resource management and optimization.
-     */
-    function uiResourceManagement(): void {
-        Classes.BitmapFactory.performNow();  // Bitmap resource control
-        Classes.View.performNow();           // View background control
-        Classes.ImageView.performNow();      // Image view resource blocking
-        Classes.TextView.performNow();       // Text view resource control
     }
 }

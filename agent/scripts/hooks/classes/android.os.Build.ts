@@ -4,7 +4,7 @@ import Java from "frida-java-bridge";
 /**
  * Hook for android.os.Build class to spoof device build information and version details.
  */
-export namespace AndroidOSBuild {
+export namespace Build {
     const NAME = "[Build]";
     const log = (message: string) => Logger.log(Logger.Type.Verbose, NAME, message);
 

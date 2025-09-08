@@ -4,7 +4,7 @@ import Java from "frida-java-bridge";
 /**
  * Hook for java.lang.Runtime class to bypass runtime execution detection.
  */
-export namespace JavaLangRuntime {
+export namespace Runtime {
     const NAME = "[Runtime]";
     const log = (message: string) => Logger.log(Logger.Type.Debug, NAME, message);
 

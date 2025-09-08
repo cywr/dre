@@ -4,7 +4,7 @@ import Java from "frida-java-bridge";
 /**
  * Hook for android.os.Debug class to bypass debug detection.
  */
-export namespace AndroidOsDebug {
+export namespace Debug {
     const NAME = "[Debug]";
     const log = (message: string) => Logger.log(Logger.Type.Debug, NAME, message);
 

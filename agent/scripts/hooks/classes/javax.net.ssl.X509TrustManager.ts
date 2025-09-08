@@ -4,7 +4,7 @@ import Java from "frida-java-bridge";
 /**
  * Hook for javax.net.ssl.X509TrustManager class to bypass certificate validation.
  */
-export namespace JavaxNetSslX509TrustManager {
+export namespace X509TrustManager {
     const NAME = "[X509TrustManager]";
     const log = (message: string) => Logger.log(Logger.Type.Hook, NAME, message);
 

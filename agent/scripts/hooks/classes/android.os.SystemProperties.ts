@@ -4,7 +4,7 @@ import Java from "frida-java-bridge";
 /**
  * Hook for android.os.SystemProperties class to bypass system properties detection.
  */
-export namespace AndroidOsSystemProperties {
+export namespace SystemProperties {
     const NAME = "[SystemProperties]";
     const log = (message: string) => Logger.log(Logger.Type.Debug, NAME, message);
 

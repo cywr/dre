@@ -4,7 +4,7 @@ import Java from "frida-java-bridge";
 /**
  * Hook for android.net.ConnectivityManager class to spoof network connectivity information.
  */
-export namespace AndroidNetConnectivityManager {
+export namespace ConnectivityManager {
     const NAME = "[ConnectivityManager]";
     const log = (message: string) => Logger.log(Logger.Type.Verbose, NAME, message);
 

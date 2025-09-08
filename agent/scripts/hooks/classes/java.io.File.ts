@@ -4,7 +4,7 @@ import Java from "frida-java-bridge";
 /**
  * Hook for java.io.File class to bypass file system root detection.
  */
-export namespace JavaIoFile {
+export namespace File {
     const NAME = "[File]";
     const log = (message: string) => Logger.log(Logger.Type.Debug, NAME, message);
 

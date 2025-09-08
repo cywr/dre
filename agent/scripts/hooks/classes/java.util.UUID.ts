@@ -4,7 +4,7 @@ import Java from "frida-java-bridge";
 /**
  * Hook for java.util.UUID class to manage UUID operations and DRM detection bypass.
  */
-export namespace JavaUtilUUID {
+export namespace UUID {
     const NAME = "[UUID]";
     const log = (message: string) => Logger.log(Logger.Type.Debug, NAME, message);
 

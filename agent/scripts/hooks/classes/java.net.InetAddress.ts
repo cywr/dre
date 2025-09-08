@@ -4,7 +4,7 @@ import Java from "frida-java-bridge";
 /**
  * Hook for java.net.InetAddress class to spoof internet address information.
  */
-export namespace JavaNetInetAddress {
+export namespace InetAddress {
     const NAME = "[InetAddress]";
     const log = (message: string) => Logger.log(Logger.Type.Verbose, NAME, message);
 

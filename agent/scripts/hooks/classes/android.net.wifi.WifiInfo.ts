@@ -4,7 +4,7 @@ import Java from "frida-java-bridge";
 /**
  * Hook for android.net.wifi.WifiInfo class to spoof WiFi information.
  */
-export namespace AndroidNetWifiWifiInfo {
+export namespace WifiInfo {
     const NAME = "[WifiInfo]";
     const log = (message: string) => Logger.log(Logger.Type.Verbose, NAME, message);
 

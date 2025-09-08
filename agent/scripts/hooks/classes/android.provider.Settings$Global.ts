@@ -4,7 +4,7 @@ import Java from "frida-java-bridge";
 /**
  * Hook for android.provider.Settings$Global class to spoof global settings.
  */
-export namespace AndroidProviderSettingsGlobal {
+export namespace SettingsGlobal {
     const NAME = "[Settings.Global]";
     const log = (message: string) => Logger.log(Logger.Type.Verbose, NAME, message);
 

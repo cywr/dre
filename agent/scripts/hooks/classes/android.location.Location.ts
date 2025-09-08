@@ -4,7 +4,7 @@ import Java from "frida-java-bridge";
 /**
  * Hook for android.location.Location class to spoof location coordinates.
  */
-export namespace AndroidLocationLocation {
+export namespace Location {
     const NAME = "[Location]";
     const log = (message: string) => Logger.log(Logger.Type.Verbose, NAME, message);
 

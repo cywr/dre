@@ -4,7 +4,7 @@ import Java from "frida-java-bridge";
 /**
  * Hook for android.net.NetworkInfo class to spoof network information.
  */
-export namespace AndroidNetNetworkInfo {
+export namespace NetworkInfo {
     const NAME = "[NetworkInfo]";
     const log = (message: string) => Logger.log(Logger.Type.Verbose, NAME, message);
 

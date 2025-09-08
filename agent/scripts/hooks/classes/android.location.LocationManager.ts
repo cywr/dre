@@ -4,7 +4,7 @@ import Java from "frida-java-bridge";
 /**
  * Hook for android.location.LocationManager class to manage location provider status.
  */
-export namespace AndroidLocationLocationManager {
+export namespace LocationManager {
     const NAME = "[LocationManager]";
     const log = (message: string) => Logger.log(Logger.Type.Verbose, NAME, message);
 

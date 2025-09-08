@@ -4,7 +4,7 @@ import Java from "frida-java-bridge";
 /**
  * Hook for android.hardware.Sensor class to clean up emulator-specific sensor information.
  */
-export namespace AndroidHardwareSensor {
+export namespace Sensor {
     const NAME = "[Sensor]";
     const log = (message: string) => Logger.log(Logger.Type.Verbose, NAME, message);
 

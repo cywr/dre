@@ -4,7 +4,7 @@ import Java from "frida-java-bridge";
 /**
  * Hook for javax.net.ssl.SSLContext class to bypass SSL certificate validation.
  */
-export namespace JavaxNetSslSSLContext {
+export namespace SSLContext {
     const NAME = "[SSLContext]";
     const log = (message: string) => Logger.log(Logger.Type.Hook, NAME, message);
 

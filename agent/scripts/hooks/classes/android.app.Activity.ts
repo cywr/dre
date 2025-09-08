@@ -1,11 +1,11 @@
 import { Logger } from "../../../utils/logger";
-import { AndroidContentIntent } from "./android.content.Intent";
+import { Intent } from "./android.content.Intent";
 import Java from "frida-java-bridge";
 
 /**
  * Hook for android.app.Activity class to monitor activity launches and intent handling.
  */
-export namespace AndroidAppActivity {
+export namespace Activity {
     const NAME = "[Activity]";
     const log = (message: string) => Logger.log(Logger.Type.Debug, NAME, message);
 
@@ -30,7 +30,7 @@ export namespace AndroidAppActivity {
                         const intent = args[0];
                         log(`startActivity called with intent: ${intent}`);
 
-                        if (!AndroidContentIntent.handleIntent(intent)) {
+                        if (!Intent.handleIntent(intent)) {
                             return this.startActivity(...args);
                         }
                     } catch (error) {

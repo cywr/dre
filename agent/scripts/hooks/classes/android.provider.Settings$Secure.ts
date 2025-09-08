@@ -4,7 +4,7 @@ import Java from "frida-java-bridge";
 /**
  * Hook for android.provider.Settings$Secure class to spoof secure settings.
  */
-export namespace AndroidProviderSettingsSecure {
+export namespace SettingsSecure {
     const NAME = "[Settings.Secure]";
     const log = (message: string) => Logger.log(Logger.Type.Verbose, NAME, message);
 
