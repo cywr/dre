@@ -12,21 +12,21 @@ export namespace AndroidNetWifiWifiInfo {
         try {
             const WifiInfo = Java.use("android.net.wifi.WifiInfo");
 
-            // Hook getSSID to return spoofed SSID
+            // Hook getSSID to return a generic WiFi name
             WifiInfo.getSSID.implementation = function () {
                 const ret = this.getSSID();
                 log(`WifiInfo.getSSID: ${ret} -> "AndroidWifi"`);
                 return '"AndroidWifi"';
             };
 
-            // Hook getBSSID to return spoofed BSSID
+            // Hook getBSSID to return a generic BSSID
             WifiInfo.getBSSID.implementation = function () {
                 const ret = this.getBSSID();
                 log(`WifiInfo.getBSSID: ${ret} -> 02:00:00:00:00:00`);
                 return "02:00:00:00:00:00";
             };
 
-            // Hook getMacAddress to return spoofed MAC address
+            // Hook getMacAddress to return a generic MAC address
             WifiInfo.getMacAddress.implementation = function () {
                 const ret = this.getMacAddress();
                 log(`WifiInfo.getMacAddress: ${ret} -> 02:00:00:00:00:00`);

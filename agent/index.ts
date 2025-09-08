@@ -34,14 +34,12 @@ if (Java.available) {
         console.log("\n\x1b[34m╓──────────────── STARTING UP HOOKS ──────────────────╖\x1b[0m");
         console.log("\x1b[34m╚═════════════════════════════════════════════════════╝\x1b[0m");
 
-        // Execute modular hook structure
-        Scripts.Cloaking.performNow();      // Anti-root, anti-debug, SSL pinning bypass
-        Scripts.DevTools.performNow();      // Cipher + Base64 analysis tools
+        // Execute comprehensive modular hook structure
+        Scripts.Cloaking.performNow();      // Complete anti-detection bypass (root, debug, SSL, spoofing)
+        Scripts.DevTools.performNow();      // Analysis tools (cipher, base64)
+        Scripts.Monitoring.performNow();    // Monitoring tools (SharedPreferences)
 
-        // Legacy hooks (to be migrated)
-        Scripts.Spoofing.performNow();
-        // Scripts.SharedPreferencesWatcher.initialize(["decrypted_preferences.xml"]);
-        // Scripts.SharedPreferencesWatcher.performNow();
+        // Legacy experimental hooks
         Scripts.Scratchpad.performNow();
 
         console.log("\x1b[32m╓─────────────────────── LOGS ────────────────────────╖\x1b[0m");

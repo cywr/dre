@@ -2,7 +2,7 @@ import { Logger } from "../../../utils/logger";
 import Java from "frida-java-bridge";
 
 /**
- * Hook for android.media.MediaDrm class to spoof DRM properties.
+ * Hook for android.media.MediaDrm class to spoof DRM information.
  */
 export namespace AndroidMediaMediaDrm {
     const NAME = "[MediaDrm]";
@@ -12,7 +12,7 @@ export namespace AndroidMediaMediaDrm {
         try {
             const MediaDrm = Java.use("android.media.MediaDrm");
 
-            // Hook getPropertyString to return spoofed DRM properties
+            // Hook getPropertyString to spoof DRM properties
             MediaDrm.getPropertyString.implementation = function (propertyName: string) {
                 const ret = this.getPropertyString(propertyName);
 

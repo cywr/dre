@@ -2,7 +2,7 @@ import { Logger } from "../../../utils/logger";
 import Java from "frida-java-bridge";
 
 /**
- * Hook for android.location.LocationManager class to spoof location manager functionality.
+ * Hook for android.location.LocationManager class to manage location provider status.
  */
 export namespace AndroidLocationLocationManager {
     const NAME = "[LocationManager]";

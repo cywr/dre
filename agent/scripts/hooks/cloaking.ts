@@ -33,6 +33,9 @@ export namespace Cloaking {
             antiRoot();
             antiDebug();
             sslPinningBypass();
+            deviceSpoofing();
+            networkSpoofing();
+            locationSpoofing();
             systemSpoofing();
         } catch (error) {
             Logger.log(Logger.Type.Error, NAME, `Hooks failed: \n${error}`);
@@ -70,12 +73,44 @@ export namespace Cloaking {
     }
 
     /**
-     * Perform system-level spoofing hooks.
+     * Perform device hardware and build spoofing.
+     */
+    function deviceSpoofing(): void {
+        Classes.Build.performNow();
+        Classes.TelephonyManager.performNow();
+        Classes.MediaDrm.performNow();
+        Classes.Sensor.performNow();
+        Classes.ContextImpl.performNow();
+    }
+
+    /**
+     * Perform network and connectivity spoofing.
+     */
+    function networkSpoofing(): void {
+        Classes.ConnectivityManager.performNow();
+        Classes.NetworkInfo.performNow();
+        Classes.WifiInfo.performNow();
+        Classes.InetAddress.performNow();
+        Classes.WebView.performNow();
+    }
+
+    /**
+     * Perform location and GPS spoofing.
+     */
+    function locationSpoofing(): void {
+        Classes.LocationManager.performNow();
+        Classes.Location.performNow();
+    }
+
+    /**
+     * Perform system settings and content spoofing.
      */
     function systemSpoofing(): void {
-        // Add device spoofing hooks here when spoofing.ts is broken down
-        // Classes.Build.hook(spoofedDevice);
-        // Classes.TelephonyManager.hook(spoofedTelephony);
-        // etc.
+        Classes.SettingsSecure.performNow();
+        Classes.SettingsGlobal.performNow();
+        Classes.ContentResolver.performNow();
+        Classes.Intent.performNow();
+        Classes.Resources.performNow();
+        Classes.ResourcesImpl.performNow();
     }
 }

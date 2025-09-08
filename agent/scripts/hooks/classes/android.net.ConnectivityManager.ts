@@ -2,7 +2,7 @@ import { Logger } from "../../../utils/logger";
 import Java from "frida-java-bridge";
 
 /**
- * Hook for android.net.ConnectivityManager class to spoof network connectivity.
+ * Hook for android.net.ConnectivityManager class to spoof network connectivity information.
  */
 export namespace AndroidNetConnectivityManager {
     const NAME = "[ConnectivityManager]";

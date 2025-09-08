@@ -12,21 +12,21 @@ export namespace AndroidNetNetworkInfo {
         try {
             const NetworkInfo = Java.use("android.net.NetworkInfo");
 
-            // Hook getType to return WIFI
+            // Hook getType to return WIFI connection type
             NetworkInfo.getType.implementation = function () {
                 const ret = this.getType();
                 log(`NetworkInfo.getType: ${ret} -> 1 (WIFI)`);
                 return 1;
             };
 
-            // Hook getTypeName to return "WIFI"
+            // Hook getTypeName to return WIFI
             NetworkInfo.getTypeName.implementation = function () {
                 const ret = this.getTypeName();
                 log(`NetworkInfo.getTypeName: ${ret} -> WIFI`);
                 return "WIFI";
             };
 
-            // Hook getSubtype to return -1 (no subtype for WIFI)
+            // Hook getSubtype to return -1 (no subtype for WiFi)
             NetworkInfo.getSubtype.implementation = function () {
                 const ret = this.getSubtype();
                 log(`NetworkInfo.getSubtype: ${ret} -> -1`);

@@ -12,7 +12,7 @@ export namespace AndroidWebkitWebView {
         try {
             const WebView = Java.use("android.webkit.WebView");
 
-            // Hook getUserAgentString with Context parameter
+            // Hook getUserAgentString with context parameter
             WebView.getUserAgentString.overload("android.content.Context").implementation = function (context: any) {
                 const ret = this.getUserAgentString(context);
                 if (ret.includes("Android SDK built for x86") || ret.includes("Emulator") || ret.includes("generic")) {

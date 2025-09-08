@@ -2,7 +2,7 @@ import { Logger } from "../../../utils/logger";
 import Java from "frida-java-bridge";
 
 /**
- * Hook for android.telephony.TelephonyManager class to spoof telephony information.
+ * Hook for android.telephony.TelephonyManager class to spoof telephony and carrier information.
  */
 export namespace AndroidTelephonyTelephonyManager {
     const NAME = "[TelephonyManager]";
@@ -22,7 +22,7 @@ export namespace AndroidTelephonyTelephonyManager {
             const TelephonyManager = Java.use("android.telephony.TelephonyManager");
             const operator = spoofedTelephony.mcc + spoofedTelephony.mnc;
 
-            // Hook getNetworkType for all overloads
+            // Network types
             TelephonyManager.getNetworkType.overloads.forEach((overload: any) => {
                 overload.implementation = function (...args: any) {
                     const ret = this.getNetworkType(...args);
@@ -31,7 +31,7 @@ export namespace AndroidTelephonyTelephonyManager {
                 };
             });
 
-            // Hook getNetworkOperator for all overloads
+            // Operators
             TelephonyManager.getNetworkOperator.overloads.forEach((overload: any) => {
                 overload.implementation = function (...args: any) {
                     const ret = this.getNetworkOperator(...args);
@@ -40,7 +40,6 @@ export namespace AndroidTelephonyTelephonyManager {
                 };
             });
 
-            // Hook getNetworkOperatorName for all overloads
             TelephonyManager.getNetworkOperatorName.overloads.forEach((overload: any) => {
                 overload.implementation = function (...args: any) {
                     const ret = this.getNetworkOperatorName(...args);
@@ -49,7 +48,6 @@ export namespace AndroidTelephonyTelephonyManager {
                 };
             });
 
-            // Hook getNetworkCountryIso for all overloads
             TelephonyManager.getNetworkCountryIso.overloads.forEach((overload: any) => {
                 overload.implementation = function (...args: any) {
                     const ret = this.getNetworkCountryIso(...args);
@@ -58,7 +56,6 @@ export namespace AndroidTelephonyTelephonyManager {
                 };
             });
 
-            // Hook getSimCountryIso for all overloads
             TelephonyManager.getSimCountryIso.overloads.forEach((overload: any) => {
                 overload.implementation = function (...args: any) {
                     const ret = this.getSimCountryIso(...args);
