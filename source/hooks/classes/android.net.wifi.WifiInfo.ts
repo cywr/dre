@@ -8,7 +8,7 @@ export namespace WifiInfo {
     const NAME = "[WifiInfo]";
     const log = (message: string) => Logger.log(Logger.Type.Verbose, NAME, message);
 
-    export function performNow(): void {
+    export function perform(): void {
         try {
             const WifiInfo = Java.use("android.net.wifi.WifiInfo");
 

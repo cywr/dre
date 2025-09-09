@@ -26,7 +26,7 @@ export namespace System {
         "java.class.path": "."
     };
 
-    export function performNow(): void {
+    export function perform(): void {
         try {
             antiEmulation();
             interceptNativeLibraries();

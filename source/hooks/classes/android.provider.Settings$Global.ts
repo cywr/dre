@@ -9,7 +9,7 @@ export namespace SettingsGlobal {
     const NAME = "[Settings.Global]";
     const log = (message: string) => Logger.log(Logger.Type.Verbose, NAME, message);
 
-    export function performNow(): void {
+    export function perform(): void {
         try {
             const SettingsGlobal = Java.use("android.provider.Settings$Global");
 

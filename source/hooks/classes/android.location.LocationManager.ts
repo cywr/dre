@@ -8,7 +8,7 @@ export namespace LocationManager {
     const NAME = "[LocationManager]";
     const log = (message: string) => Logger.log(Logger.Type.Verbose, NAME, message);
 
-    export function performNow(): void {
+    export function perform(): void {
         try {
             const LocationManager = Java.use("android.location.LocationManager");
 

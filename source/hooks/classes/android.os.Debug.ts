@@ -8,7 +8,7 @@ export namespace Debug {
     const NAME = "[Debug]";
     const log = (message: string) => Logger.log(Logger.Type.Debug, NAME, message);
 
-    export function performNow(): void {
+    export function perform(): void {
         try {
             const DebugClass = Java.use('android.os.Debug');
             

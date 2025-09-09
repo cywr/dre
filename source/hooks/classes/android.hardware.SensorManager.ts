@@ -10,7 +10,7 @@ export namespace SensorManager {
     const log = (message: string) => Logger.log(Logger.Type.Debug, NAME, message);
     const verboseLog = (message: string) => Logger.log(Logger.Type.Verbose, NAME, message);
 
-    export function performNow(sensors?: any): void {
+    export function perform(sensors?: any): void {
         try {
             if (sensors) {
                 antiEmulation(sensors);

@@ -35,7 +35,7 @@ export namespace ApplicationPackageManager {
         "com.kingouser.com"
     ];
 
-    export function performNow(): void {
+    export function perform(): void {
         try {
             const PackageManager = Java.use("android.app.ApplicationPackageManager");
             const NameNotFoundException = Java.use("android.content.pm.PackageManager$NameNotFoundException");

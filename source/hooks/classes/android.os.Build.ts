@@ -9,7 +9,7 @@ export namespace Build {
     const NAME = "[Build]";
     const log = (message: string) => Logger.log(Logger.Type.Verbose, NAME, message);
 
-    export function performNow(): void {
+    export function perform(): void {
         try {
             const Build = Java.use("android.os.Build");
             const BuildVersion = Java.use("android.os.Build$VERSION");

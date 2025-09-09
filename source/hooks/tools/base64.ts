@@ -9,7 +9,7 @@ export namespace Base64 {
     const NAME = "[Base64]";
     const log = (message: string) => Logger.log(Logger.Type.Hook, NAME, message);
 
-    export function performNow(): void {
+    export function perform(): void {
         try {
             decode();
             encode();

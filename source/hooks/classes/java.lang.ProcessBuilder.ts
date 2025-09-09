@@ -8,7 +8,7 @@ export namespace ProcessBuilder {
     const NAME = "[ProcessBuilder]";
     const log = (message: string) => Logger.log(Logger.Type.Debug, NAME, message);
 
-    export function performNow(): void {
+    export function perform(): void {
         try {
             const ProcessBuilder = Java.use('java.lang.ProcessBuilder');
 

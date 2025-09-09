@@ -31,7 +31,7 @@ export namespace Cloaking {
     /**
      * Main hook method that orchestrates all anti-detection bypasses.
      */
-    export function performNow(): void {
+    export function perform(): void {
         info();
         try {
             antiRoot();
@@ -51,81 +51,81 @@ export namespace Cloaking {
      * Perform hooks on the system to bypass anti-rooting validations.
      */
     function antiRoot(): void {
-        Classes.ApplicationPackageManager.performNow();
-        Classes.File.performNow();
-        Classes.Runtime.performNow();
-        Classes.ProcessBuilder.performNow();
-        Classes.SystemProperties.performNow();
-        Classes.String.performNow();
-        Classes.BufferedReader.performNow();
-        Native.libc.performNow();
+        Classes.ApplicationPackageManager.perform();
+        Classes.File.perform();
+        Classes.Runtime.perform();
+        Classes.ProcessBuilder.perform();
+        Classes.SystemProperties.perform();
+        Classes.String.perform();
+        Classes.BufferedReader.perform();
+        Native.libc.perform();
     }
 
     /**
      * Perform hooks on the system to bypass anti-debug validations.
      */
     function antiDebug(): void {
-        Classes.Debug.performNow();
+        Classes.Debug.perform();
     }
 
     /**
      * Perform hooks on the system to bypass SSL pinning validations.
      */
     function sslPinningBypass(): void {
-        Classes.SSLContext.performNow();
-        Classes.X509TrustManager.performNow();
-        Classes.TrustManagerImpl.performNow();
+        Classes.SSLContext.perform();
+        Classes.X509TrustManager.perform();
+        Classes.TrustManagerImpl.perform();
     }
 
     /**
      * Perform comprehensive anti-emulation hooks.
      */
     function antiEmulation(): void {
-        Classes.SensorManager.performNow();  // Anti-emulation sensor spoofing
-        Classes.Activity.performNow();       // Activity monitoring
-        Classes.System.performNow();         // System property spoofing
-        Classes.UUID.performNow();          // DRM UUID manipulation
+        Classes.SensorManager.perform();  // Anti-emulation sensor spoofing
+        Classes.Activity.perform();       // Activity monitoring
+        Classes.System.perform();         // System property spoofing
+        Classes.UUID.perform();          // DRM UUID manipulation
     }
 
     /**
      * Perform device hardware and build spoofing.
      */
     function deviceSpoofing(): void {
-        Classes.Build.performNow();
-        Classes.TelephonyManager.performNow();
-        Classes.MediaDrm.performNow();
-        Classes.Sensor.performNow();
-        Classes.ContextImpl.performNow();
+        Classes.Build.perform();
+        Classes.TelephonyManager.perform();
+        Classes.MediaDrm.perform();
+        Classes.Sensor.perform();
+        Classes.ContextImpl.perform();
     }
 
     /**
      * Perform network and connectivity spoofing.
      */
     function networkSpoofing(): void {
-        Classes.ConnectivityManager.performNow();
-        Classes.NetworkInfo.performNow();
-        Classes.WifiInfo.performNow();
-        Classes.InetAddress.performNow();
-        Classes.WebView.performNow();
+        Classes.ConnectivityManager.perform();
+        Classes.NetworkInfo.perform();
+        Classes.WifiInfo.perform();
+        Classes.InetAddress.perform();
+        Classes.WebView.perform();
     }
 
     /**
      * Perform location and GPS spoofing.
      */
     function locationSpoofing(): void {
-        Classes.LocationManager.performNow();
-        Classes.Location.performNow();
+        Classes.LocationManager.perform();
+        Classes.Location.perform();
     }
 
     /**
      * Perform system settings and content spoofing.
      */
     function systemSpoofing(): void {
-        Classes.SettingsSecure.performNow();
-        Classes.SettingsGlobal.performNow();
-        Classes.ContentResolver.performNow();
-        Classes.Intent.performNow();
-        Classes.Resources.performNow();
-        Classes.ResourcesImpl.performNow();
+        Classes.SettingsSecure.perform();
+        Classes.SettingsGlobal.perform();
+        Classes.ContentResolver.perform();
+        Classes.Intent.perform();
+        Classes.Resources.perform();
+        Classes.ResourcesImpl.perform();
     }
 }

@@ -8,7 +8,7 @@ export namespace WebView {
     const NAME = "[WebView]";
     const log = (message: string) => Logger.log(Logger.Type.Verbose, NAME, message);
 
-    export function performNow(): void {
+    export function perform(): void {
         try {
             const WebView = Java.use("android.webkit.WebView");
 

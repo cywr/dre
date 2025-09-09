@@ -13,7 +13,7 @@ export namespace Resources {
         mnc: "260"
     };
 
-    export function performNow(): void {
+    export function perform(): void {
         try {
             const Resources = Java.use("android.content.res.Resources");
 

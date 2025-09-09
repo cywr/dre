@@ -8,7 +8,7 @@ export namespace SSLContext {
     const NAME = "[SSLContext]";
     const log = (message: string) => Logger.log(Logger.Type.Hook, NAME, message);
 
-    export function performNow(): void {
+    export function perform(): void {
         try {
             const SSLContext = Java.use("javax.net.ssl.SSLContext");
             const X509TrustManager = Java.use("javax.net.ssl.X509TrustManager");

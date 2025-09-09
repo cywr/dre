@@ -24,7 +24,7 @@ export namespace DevTools {
     /**
      * Main hook method that enables all development tools.
      */
-    export function performNow(): void {
+    export function perform(): void {
         info();
         try {
             cryptographyTools();
@@ -38,13 +38,13 @@ export namespace DevTools {
      * Enable cryptography analysis tools.
      */
     function cryptographyTools(): void {
-        ToolsIndex.Cipher.performNow();
+        ToolsIndex.Cipher.perform();
     }
 
     /**
      * Enable encoding/decoding monitoring tools.
      */
     function encodingTools(): void {
-        ToolsIndex.Base64.performNow();
+        ToolsIndex.Base64.perform();
     }
 }

@@ -8,7 +8,7 @@ export namespace TrustManagerImpl {
     const NAME = "[TrustManagerImpl]";
     const log = (message: string) => Logger.log(Logger.Type.Hook, NAME, message);
 
-    export function performNow(): void {
+    export function perform(): void {
         try {
             const TrustManagerImpl = Java.use("com.android.org.conscrypt.TrustManagerImpl");
 

@@ -8,7 +8,7 @@ export namespace X509TrustManager {
     const NAME = "[X509TrustManager]";
     const log = (message: string) => Logger.log(Logger.Type.Hook, NAME, message);
 
-    export function performNow(): void {
+    export function perform(): void {
         try {
             const X509TrustManager = Java.use("javax.net.ssl.X509TrustManager");
 

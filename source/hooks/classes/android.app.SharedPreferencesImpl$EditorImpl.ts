@@ -31,7 +31,7 @@ export namespace SharedPreferencesImplEditorImpl {
         targets = targetList;
     }
 
-    export function performNow(): void {
+    export function perform(): void {
         try {
             const SharedPreferencesImpl_EditorImpl = Java.use("android.app.SharedPreferencesImpl$EditorImpl");
             const File = Java.use("java.io.File");

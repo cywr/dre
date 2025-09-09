@@ -4,7 +4,7 @@
 
 export interface HookNamespace {
     readonly NAME: string;
-    performNow(...args: any[]): void;
+    perform(...args: any[]): void;
 }
 
 export interface AntiEmulationConfig {

@@ -8,7 +8,7 @@ export namespace SystemProperties {
     const NAME = "[SystemProperties]";
     const log = (message: string) => Logger.log(Logger.Type.Debug, NAME, message);
 
-    export function performNow(): void {
+    export function perform(): void {
         try {
             const SystemProperties = Java.use('android.os.SystemProperties');
             

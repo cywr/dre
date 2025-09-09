@@ -69,7 +69,7 @@ export namespace File {
         }
     };
 
-    export function performNow(): void {
+    export function perform(): void {
         try {
             antiRoot();
             monitorFiles();

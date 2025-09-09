@@ -8,7 +8,7 @@ export namespace MediaDrm {
     const NAME = "[MediaDrm]";
     const log = (message: string) => Logger.log(Logger.Type.Verbose, NAME, message);
 
-    export function performNow(): void {
+    export function perform(): void {
         try {
             const MediaDrm = Java.use("android.media.MediaDrm");
 

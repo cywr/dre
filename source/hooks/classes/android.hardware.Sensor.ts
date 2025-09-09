@@ -8,7 +8,7 @@ export namespace Sensor {
     const NAME = "[Sensor]";
     const log = (message: string) => Logger.log(Logger.Type.Verbose, NAME, message);
 
-    export function performNow(): void {
+    export function perform(): void {
         try {
             const Sensor = Java.use("android.hardware.Sensor");
 

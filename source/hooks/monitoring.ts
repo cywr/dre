@@ -24,7 +24,7 @@ export namespace Monitoring {
      * Main hook method that enables all monitoring tools.
      * @param targets Optional list of specific SharedPreferences files to monitor
      */
-    export function performNow(targets?: string[]): void {
+    export function perform(targets?: string[]): void {
         info();
         try {
             sharedPreferencesMonitoring();
@@ -37,7 +37,7 @@ export namespace Monitoring {
      * Enable SharedPreferences monitoring and analysis.
      */
     function sharedPreferencesMonitoring(): void {
-        Classes.SharedPreferencesImpl.performNow();
-        Classes.SharedPreferencesImplEditorImpl.performNow();
+        Classes.SharedPreferencesImpl.perform();
+        Classes.SharedPreferencesImplEditorImpl.perform();
     }
 }

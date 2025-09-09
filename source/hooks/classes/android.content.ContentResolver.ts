@@ -13,7 +13,7 @@ export namespace ContentResolver {
         GSF_ID: "3f4c5e6d7a8b9c0d"
     };
 
-    export function performNow(): void {
+    export function perform(): void {
         try {
             const ContentResolver = Java.use("android.content.ContentResolver");
             const MatrixCursor = Java.use("android.database.MatrixCursor");

@@ -10,7 +10,7 @@ export namespace Cipher {
     const NAME = "[Cipher]";
     const log = (message: string) => Logger.log(Logger.Type.Hook, NAME, message);
 
-    export function performNow(): void {
+    export function perform(): void {
         try {
             init();
             final();

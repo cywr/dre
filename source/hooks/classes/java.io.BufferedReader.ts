@@ -8,7 +8,7 @@ export namespace BufferedReader {
     const NAME = "[BufferedReader]";
     const log = (message: string) => Logger.log(Logger.Type.Debug, NAME, message);
 
-    export function performNow(): void {
+    export function perform(): void {
         try {
             const BufferedReader = Java.use('java.io.BufferedReader');
 

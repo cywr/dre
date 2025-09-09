@@ -16,7 +16,7 @@ export namespace Location {
         provider: "gps"
     };
 
-    export function performNow(): void {
+    export function perform(): void {
         try {
             const Location = Java.use("android.location.Location");
 

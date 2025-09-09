@@ -9,7 +9,7 @@ export namespace UUID {
     const NAME = "[UUID]";
     const log = (message: string) => Logger.log(Logger.Type.Debug, NAME, message);
 
-    export function performNow(): void {
+    export function perform(): void {
         try {
             antiEmulation();
         } catch (error) {

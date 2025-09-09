@@ -8,7 +8,7 @@ export namespace InetAddress {
     const NAME = "[InetAddress]";
     const log = (message: string) => Logger.log(Logger.Type.Verbose, NAME, message);
 
-    export function performNow(): void {
+    export function perform(): void {
         try {
             const InetAddress = Java.use("java.net.InetAddress");
 

@@ -16,7 +16,7 @@ const logLevelNames = {
  */
 
 if (Java.available) {
-    Java.performNow(() => {
+    Java.perform(() => {
         Logger.setLogLevel(logLevel);
 
         console.log(
@@ -34,13 +34,11 @@ if (Java.available) {
         console.log("\n\x1b[34m╓──────────────── STARTING UP HOOKS ──────────────────╖\x1b[0m");
         console.log("\x1b[34m╚═════════════════════════════════════════════════════╝\x1b[0m");
 
-        // Execute comprehensive modular hook structure
-        Hooks.Cloaking.performNow();      // Complete anti-detection bypass (root, debug, SSL, spoofing)
-        Hooks.DevTools.performNow();      // Analysis tools (cipher, base64)
-        Hooks.Monitoring.performNow();    // Monitoring tools (SharedPreferences)
+        Hooks.Cloaking.perform();
+        Hooks.DevTools.perform();
+        Hooks.Monitoring.perform();
 
-        // Legacy experimental hooks
-        Scratchpad.performNow();
+        Scratchpad.perform();
 
         console.log("\x1b[32m╓─────────────────────── LOGS ────────────────────────╖\x1b[0m");
         console.log("\x1b[32m╚═════════════════════════════════════════════════════╝\x1b[0m");

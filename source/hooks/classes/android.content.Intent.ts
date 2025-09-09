@@ -69,7 +69,7 @@ export namespace Intent {
         }
     }
 
-    export function performNow(): void {
+    export function perform(): void {
         try {
             const Intent = Java.use("android.content.Intent");
 

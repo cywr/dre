@@ -8,7 +8,7 @@ export namespace ConnectivityManager {
     const NAME = "[ConnectivityManager]";
     const log = (message: string) => Logger.log(Logger.Type.Verbose, NAME, message);
 
-    export function performNow(): void {
+    export function perform(): void {
         try {
             const ConnectivityManager = Java.use("android.net.ConnectivityManager");
 

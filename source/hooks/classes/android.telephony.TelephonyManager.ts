@@ -9,7 +9,7 @@ export namespace TelephonyManager {
     const NAME = "[TelephonyManager]";
     const log = (message: string) => Logger.log(Logger.Type.Verbose, NAME, message);
 
-    export function performNow(): void {
+    export function perform(): void {
         try {
             const TelephonyManager = Java.use("android.telephony.TelephonyManager");
             const operator = DEFAULT_SPOOFED_TELEPHONY.mcc + DEFAULT_SPOOFED_TELEPHONY.mnc;

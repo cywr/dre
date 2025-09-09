@@ -9,7 +9,7 @@ export namespace SettingsSecure {
     const NAME = "[Settings.Secure]";
     const log = (message: string) => Logger.log(Logger.Type.Verbose, NAME, message);
 
-    export function performNow(): void {
+    export function perform(): void {
         try {
             const SettingsSecure = Java.use("android.provider.Settings$Secure");
 

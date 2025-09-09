@@ -8,7 +8,7 @@ export namespace ResourcesImpl {
     const NAME = "[ResourcesImpl]";
     const log = (message: string) => Logger.log(Logger.Type.Verbose, NAME, message);
 
-    export function performNow(): void {
+    export function perform(): void {
         try {
             const ResourcesImpl = Java.use("android.content.res.ResourcesImpl");
 

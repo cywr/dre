@@ -8,7 +8,7 @@ export namespace NetworkInfo {
     const NAME = "[NetworkInfo]";
     const log = (message: string) => Logger.log(Logger.Type.Verbose, NAME, message);
 
-    export function performNow(): void {
+    export function perform(): void {
         try {
             const NetworkInfo = Java.use("android.net.NetworkInfo");
 
