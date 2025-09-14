@@ -7,13 +7,8 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
-# Build the project (check if _build/index.js exists and is newer than source)
-if [ ! -f "_build/index.js" ] || [ "source/index.ts" -nt "_build/index.js" ]; then
-    echo "Building project..."
-    pnpm run build
-else
-    echo "Project already built, skipping..."
-fi
+echo "Building project..."
+pnpm run build
 
 # Run frida with the provided app name
 echo "Running frida with app: $1"

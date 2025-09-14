@@ -10,14 +10,6 @@ export namespace Scratchpad {
     const log = (message: string) => Logger.log(Logger.Type.Hook, NAME, message);
 
     export function perform(): void {
-        try {
-            scratch();
-        } catch (error) {
-            Logger.log(Logger.Type.Error, NAME, `Hooks failed: \n${error}`);
-        }
-    }
-
-    function scratch() {        
-
+    
     }
 }

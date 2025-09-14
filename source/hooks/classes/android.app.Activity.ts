@@ -38,6 +38,13 @@ export namespace Activity {
                     }
                 };
             });
+
+            Activity.finish.overloads.forEach((overload: any) => {
+                overload.implementation = function () {
+                    log("finish() - bypassing app termination");
+                    return;
+                };
+            });
         } catch (error) {
             Logger.log(Logger.Type.Error, NAME, `hookActivity failed: ${error}`);
         }
