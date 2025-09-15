@@ -1,4 +1,6 @@
 import { Logger } from "../../utils/logger";
+import { Native } from "../tools/native";
+import { ROOT_DETECTION_COMMANDS } from "../../utils/types/constants";
 
 /**
  * Hook for native libc.so system() function to bypass native command execution detection.
@@ -9,24 +11,33 @@ export namespace Libc {
 
     export function perform(): void {
         try {
-            Interceptor.attach((Module as any).findExportByName("libc.so", "system")!, {
+            // Use the Native utility to hook system() function
+            Native.attach({ 
+                library: "libc.so", 
+                method: "system",
                 onEnter: function(args) {
-                    var cmd = this.readCString(args[0]);
+                    const pointer = args[0];
+                    const command = Native.readCString(pointer);
+                    
+                    if (!command) return;
 
-                    if (cmd.indexOf("getprop") != -1 
-                    || cmd == "mount" 
-                    || cmd.indexOf("build.prop") != -1 
-                    || cmd == "id") {
-                        log(`Native libc.so: ${cmd}`);
-                        this.writeUtf8String(args[0], "grep");
+                    // Check for root detection commands
+                    const isRootDetection = ROOT_DETECTION_COMMANDS.some(cmd => 
+                        command.includes(cmd) || command === cmd
+                    );
+
+                    if (isRootDetection) {
+                        log(`Blocking root detection command: ${command}`);
+                        pointer.writeUtf8String("grep"); // Replace with harmless command
+                        return;
                     }
 
-                    if (cmd == "su") {
-                        log(`Native libc.so: ${cmd}`);
-                        this.writeUtf8String(args[0], "loremipsum");
+                    // Check for su command specifically
+                    if (command === "su") {
+                        log(`Blocking su command: ${command}`);
+                        pointer.writeUtf8String("loremipsum"); // Replace with harmless command
                     }
-                },
-                onLeave: function(retval) {}
+                }
             });
         } catch (error) {
             Logger.log(Logger.Type.Error, NAME, `Hook failed: ${error}`);

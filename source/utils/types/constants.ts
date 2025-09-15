@@ -56,3 +56,10 @@ export const DEFAULT_GLOBAL_SETTINGS = {
     mobile_data: 1,
     airplane_mode_on: 0
 } as const;
+
+export const ROOT_DETECTION_COMMANDS = [
+    "getprop",
+    "mount", 
+    "build.prop",
+    "id"
+] as const;
