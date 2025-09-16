@@ -24,30 +24,50 @@ pnpm run owasp.mstg.uncrackable1  # Test against OWASP UnCrackable Level 1
 
 ## Architecture Overview
 
-This is a **Frida-based anti-emulation bypass framework** for Android reverse engineering and security testing.
+This is a **Frida-based Android hooking framework** for reverse engineering and security testing.
 
 ### Core Structure
 - **`source/index.ts`**: Main entry point that initializes hooks and configures logging
-- **`source/interfaces/hook.ts`**: Abstract Hook class that all bypass modules extend
-- **`source/scripts/system/`**: Individual bypass modules for different Android security mechanisms
+- **`source/hooks/`**: Main hooks directory organized by category:
+  - **`source/hooks/classes/`**: Android/Java class-specific hooks (50+ classes)
+  - **`source/hooks/native/`**: Native library hooks (libc, etc.)
+  - **`source/hooks/tools/`**: Utility hooks (cipher, base64, reflection, DCL, native tools)
 - **`source/utils/logger.ts`**: Centralized logging system with configurable verbosity levels
-- **`source/scripts/modules.ts`**: Module exports aggregator
+- **`source/scratchpad.ts`**: Interactive development/testing environment
 
-### Hook System
-All bypass functionality is implemented as Hook classes extending the abstract Hook base class. Each hook must implement:
-- `NAME`: String identifier for the hook
-- `LOG_TYPE`: Logger type for consistent output formatting
-- `info()`: Hook information/description
-- `execute()`: Main hook implementation
+### Hook System Architecture
+The framework uses a modular approach with three main categories:
 
-### Available Bypass Modules
-- **Rooting**: Bypass root detection mechanisms
-- **Debug**: Disable anti-debugging protections  
-- **Spoofing**: Comprehensive device/system spoofing (merged from DeviceCloaking)
-- **SSLPinning**: Bypass SSL certificate pinning
-- **Cipher**: Hook cryptographic operations
-- **Base64**: Monitor Base64 encoding/decoding
-- **SharedPreferencesWatcher**: Monitor Android SharedPreferences access
+#### 1. Class Hooks (`source/hooks/classes/`)
+Individual hooks for specific Android/Java classes, including:
+- **System Properties**: `android.os.SystemProperties`, `android.os.Build`
+- **Security**: `javax.net.ssl.SSLContext`, `javax.net.ssl.X509TrustManager`
+- **Device Information**: `android.telephony.TelephonyManager`, `android.hardware.SensorManager`
+- **File System**: `java.io.File`, `java.io.BufferedReader`
+- **Network**: `android.net.ConnectivityManager`, `java.net.InetAddress`
+- **And many more** - see `source/hooks/classes/index.ts` for full list
+
+#### 2. Native Hooks (`source/hooks/native/`)
+- **libc hooks**: Native library function interception
+
+#### 3. Tool Hooks (`source/hooks/tools/`)
+- **Cipher**: Cryptographic operations monitoring
+- **Base64**: Base64 encoding/decoding tracking
+- **Reflection**: Java reflection call monitoring
+- **DCL**: Dynamic Class Loading detection
+- **Native**: Native method hooking utilities
+
+### Active Hook Configuration
+Hooks are selectively enabled in `source/index.ts`. Currently active:
+- Cipher monitoring
+- Base64 tracking  
+- Dynamic Class Loading detection
+- Reflection monitoring
+- Scratchpad environment
+
+Disabled hooks (commented out):
+- Cloaking (device spoofing)
+- General monitoring
 
 ### Logging System
 Configure logging verbosity in `source/index.ts` by setting `logLevel`:
@@ -61,11 +81,11 @@ Configure logging verbosity in `source/index.ts` by setting `logLevel`:
 - Output goes to `_build/index.js`
 - The `run.sh` script handles intelligent rebuilding (only rebuilds if source is newer)
 
-### Hook Implementation Patterns
-- **Overload Consolidation**: All hooks use `.overloads.forEach()` pattern for cleaner code
-- **Unified Logging**: Consistent logging format across all hook modules
-- **Error Handling**: Individual hook methods wrapped in try-catch blocks
-- **Modular Design**: Each security bypass is isolated in its own class extending Hook
+### Development Patterns
+- **Modular Hook Design**: Each hook is isolated and can be enabled/disabled independently
+- **Class-Specific Targeting**: Individual classes have dedicated hook files for focused analysis
+- **Comprehensive Coverage**: 50+ Android/Java classes are available for hooking
+- **Native Integration**: Supports both Java/Android hooks and native library interception
 
 ### Prerequisites
 Requires global Frida installation:

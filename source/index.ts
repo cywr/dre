@@ -7,8 +7,13 @@ if (Java.available) {
     Logger.setLogLevel(Logger.LogLevel.INFO)
 
     Java.perform(() => {
-        Hooks.Cloaking.perform();
-        Hooks.Monitoring.perform();
+        // Hooks.Cloaking.perform();
+        // Hooks.Monitoring.perform();
+
+        Hooks.Cipher.perform()
+        Hooks.Base64.perform()
+        Hooks.DCL.perform()
+        Hooks.Reflection.perform() // Re-enabled with safer implementation
 
         Scratchpad.perform();
     })

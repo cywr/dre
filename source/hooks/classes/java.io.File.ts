@@ -136,25 +136,12 @@ export namespace File {
             const File = Java.use("java.io.File");
             const FileInputStream = Java.use("java.io.FileInputStream");
 
-            try {
-                const fileConstr1 = File.$init.overload("java.lang.String");
-                fileConstr1.implementation = function (a0: any) {
-                    log(`New file (1): ${a0}`);
-                    return fileConstr1.call(this, a0);
+            File.$init.overloads.forEach(overload => {
+                overload.implementation = function (...args: any[]) {
+                    log(`New file: ${args}`);
+                    return overload.call(this, ...args);
                 };
-            } catch (error) {
-                Logger.log(Logger.Type.Error, NAME, `New file (1) failed: ${error}`);
-            }
-
-            try {
-                const fileConstr2 = File.$init.overload("java.lang.String", "java.lang.String");
-                fileConstr2.implementation = function (a0: any, a1: any) {
-                    log(`New file (2): ${a0}/${a1}`);
-                    return fileConstr2.call(this, a0, a1);
-                };
-            } catch (error) {
-                Logger.log(Logger.Type.Error, NAME, `New file (2) failed: ${error}`);
-            }
+            })
 
             try {
                 const fileInputStreamConstr = FileInputStream.$init.overload("java.io.File");

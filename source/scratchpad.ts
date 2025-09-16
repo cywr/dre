@@ -11,11 +11,11 @@ export namespace Scratchpad {
     const log = (message: string) => Logger.log(Logger.Type.Hook, NAME, message);
 
     export function perform(): void {
-        native().catch(error => log(`Native test failed: ${error}`));
+        
     }
-
+    
+    // native().catch(error => log(`Native test failed: ${error}`));
     async function native(): Promise<void> {
-
         Native.waitLibrary("libmenascyber.so", async () => {
             await Native.listExports("libmenascyber.so");
             await Native.listImports("libmenascyber.so");
