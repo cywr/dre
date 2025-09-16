@@ -6,15 +6,19 @@ import Java from "frida-java-bridge";
 if (Java.available) {
     Logger.setLogLevel(Logger.LogLevel.INFO)
 
-    Java.perform(() => {
+    Java.performNow(() => {
         Hooks.Cloaking.perform()
-
-        Hooks.Base64.perform()
-        Hooks.Cipher.perform()
         // Hooks.DCL.perform()
         // Hooks.Reflection.perform()
-        Hooks.SSLPinning.perform()
-        Hooks.SharedPreferences.perform()
+        // Hooks.SSLPinning.perform()
+        // Hooks.SharedPreferences.perform()
+        
+        Hooks.Base64.perform()
+        Hooks.Cipher.perform()
+    });
+
+    Java.perform(() => {
+        
 
         Scratchpad.perform()
     })

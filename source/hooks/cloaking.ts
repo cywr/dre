@@ -50,7 +50,7 @@ export namespace Cloaking {
      */
     function antiRoot(): void {
         Classes.ApplicationPackageManager.perform();
-        // Classes.File.perform();
+        Classes.File.perform();
         Classes.Runtime.perform();
         Classes.ProcessBuilder.perform();
         Classes.SystemProperties.perform();
