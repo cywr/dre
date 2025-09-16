@@ -32,7 +32,7 @@ export const DEFAULT_SPOOFED_TELEPHONY: SpoofedTelephony = {
     mcc: "310",
     mnc: "260",
     operatorName: "T-Mobile",
-    countryIso: "us",
+    countryIso: "sg",
     simState: SimState.READY,
     networkType: NetworkType.LTE,
     dataNetworkType: NetworkType.LTE

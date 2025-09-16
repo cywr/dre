@@ -13,7 +13,8 @@
   "scripts": {
     "lint": "tsc",
     "build": "frida-compile source/index.ts -o _build/index.js -c",
-    "start": "./run.sh"
+    "start": "./run.sh",
+    "pull-dex": "./pull_dex.sh"
   },
   "devDependencies": {
     "@types/frida-gum": "^19.0.1",

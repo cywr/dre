@@ -36,6 +36,39 @@ frida -U -f <package-name> -l _build/index.js
 ./run.sh com.example.myapp
 ```
 
+## DEX File Extraction
+
+The framework automatically detects and extracts DEX files that pass through Base64 or Cipher operations. When DEX files are detected, they are:
+
+- **Automatically identified** by DEX magic bytes and version validation
+- **Saved to device** in a writable directory (e.g., `/sdcard/Download/dre_extractions/`)
+- **Pulled to local machine** using adb to `_build/dex_extractions/`
+- **Named descriptively** with context, operation, timestamp, and version
+
+### DEX Extraction Workflow
+
+1. **Run your Frida script** to generate DEX files on the device:
+```bash
+./run.sh com.example.app
+```
+
+2. **Pull DEX files** from device to your Mac:
+```bash
+pnpm run pull-dex
+# or
+npm run pull-dex
+```
+
+### Extracted File Format
+Files are saved as: `dex_{context}_{operation}_{timestamp}_v{version}.dex`
+
+Example: `dex_Base64_decode_2024-09-16T10-30-45-123Z_v035.dex`
+
+### Requirements
+- **adb**: Android SDK tools must be installed and in PATH
+- **USB Debugging**: Enabled on your Android device
+- **Device Connection**: Device connected via USB
+
 ## Troubleshooting
 
 If you get "frida: command not found":

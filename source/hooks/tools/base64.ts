@@ -1,5 +1,6 @@
 import { Logger } from "../../utils/logger";
 import * as Utils from "../../utils/functions"
+import { DexExtractor } from "../../utils/dexextractor";
 import Java from "frida-java-bridge";
 
 /**
@@ -35,6 +36,11 @@ export namespace Base64 {
                     log(`Base64.decode\n - Input: ${Utils.bin2ascii(args[0])}\n - Output: ${Utils.bin2ascii(output)}`);
                 }
                 
+                // Check if output is DEX and extract if so
+                if (DexExtractor.isDexFile(output)) {
+                    DexExtractor.saveDexFile(output, "Base64", "decode");
+                }
+                
                 return output;
             };
         });
@@ -47,6 +53,15 @@ export namespace Base64 {
             overload.implementation = function(...args: any) {
                 var output = this.encode(...args);
                 log(`Base64.encode\n - Input: ${Utils.bin2ascii(args[0])}\n - Output: ${Utils.bin2ascii(output)}`);
+                
+                // Check if input or output is DEX and extract if so
+                if (DexExtractor.isDexFile(args[0])) {
+                    DexExtractor.saveDexFile(args[0], "Base64", "encode_input");
+                }
+                if (DexExtractor.isDexFile(output)) {
+                    DexExtractor.saveDexFile(output, "Base64", "encode_output");
+                }
+                
                 return output;
             };
         });
@@ -55,6 +70,12 @@ export namespace Base64 {
             overload.implementation = function(...args: any) {
                 var output = this.encodeToString(...args);
                 log(`Base64.encodeToString\n - Input: ${Utils.bin2ascii(args[0])}\n - Output: ${output}`);
+                
+                // Check if input is DEX and extract if so
+                if (DexExtractor.isDexFile(args[0])) {
+                    DexExtractor.saveDexFile(args[0], "Base64", "encodeToString");
+                }
+                
                 return output;
             };
         });

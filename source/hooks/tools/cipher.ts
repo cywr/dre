@@ -1,5 +1,6 @@
 import { Logger } from "../../utils/logger";
 import * as Utils from "../../utils/functions"
+import { DexExtractor } from "../../utils/dexextractor";
 import Java from "frida-java-bridge";
 
 /**
@@ -80,6 +81,14 @@ export namespace Cipher {
                 log( 
                     `Execution!!!\nInput\n - Hex: ${inputHex}\n - ASCII: ${inputAscii}\nOutput\n - Hex: ${outputHex}\n - ASCII: ${outputAscii}`
                 );
+
+                // Check if input or output is DEX and extract if so
+                if (DexExtractor.isDexFile(inputByteArray)) {
+                    DexExtractor.saveDexFile(inputByteArray, "Cipher", "doFinal_input");
+                }
+                if (DexExtractor.isDexFile(outputByteArray)) {
+                    DexExtractor.saveDexFile(outputByteArray, "Cipher", "doFinal_output");
+                }
 
                 return outputByteArray;
             };
