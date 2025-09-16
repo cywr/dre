@@ -2,8 +2,6 @@
 export { Activity } from './android.app.Activity';
 export { ApplicationPackageManager } from './android.app.ApplicationPackageManager';
 export { ContextImpl } from './android.app.ContextImpl';
-export { SharedPreferencesImpl } from './android.app.SharedPreferencesImpl';
-export { SharedPreferencesImplEditorImpl } from './android.app.SharedPreferencesImpl$EditorImpl';
 
 // Content layer hooks
 export { ContentResolver } from './android.content.ContentResolver';
@@ -43,8 +41,6 @@ export { TelephonyManager } from './android.telephony.TelephonyManager';
 // WebKit layer hooks
 export { WebView } from './android.webkit.WebView';
 
-// Conscrypt layer hooks
-export { TrustManagerImpl } from './com.android.org.conscrypt.TrustManagerImpl';
 
 // Java IO layer hooks
 export { BufferedReader } from './java.io.BufferedReader';
@@ -62,6 +58,3 @@ export { InetAddress } from './java.net.InetAddress';
 // Java Util layer hooks
 export { UUID } from './java.util.UUID';
 
-// Javax SSL layer hooks
-export { SSLContext } from './javax.net.ssl.SSLContext';
-export { X509TrustManager } from './javax.net.ssl.X509TrustManager';

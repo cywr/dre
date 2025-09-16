@@ -7,14 +7,17 @@ if (Java.available) {
     Logger.setLogLevel(Logger.LogLevel.INFO)
 
     Java.perform(() => {
-        // Hooks.Cloaking.perform();
-        // Hooks.Monitoring.perform();
+        Hooks.Cloaking.perform()
+        Hooks.SharedPreferences.perform()
+        Hooks.SSLPinning.perform()
 
-        Hooks.Cipher.perform()
         Hooks.Base64.perform()
+        Hooks.Cipher.perform()
         Hooks.DCL.perform()
-        Hooks.Reflection.perform() // Re-enabled with safer implementation
+        Hooks.Reflection.perform()
+        Hooks.SSLPinning.perform()
+        Hooks.SharedPreferences.perform()
 
-        Scratchpad.perform();
+        Scratchpad.perform()
     })
 }

@@ -18,7 +18,6 @@ export namespace Cloaking {
             + `\n╓─┬\x1b[31m Comprehensive Anti-Detection Suite \x1b[0m`
             + `\n║ ├── Anti-Rooting`
             + `\n║ ├── Anti-Debug`
-            + `\n║ ├── SSL Pinning Bypass`
             + `\n║ ├── Anti-Emulation`
             + `\n║ ├── Device Spoofing`
             + `\n║ ├── Network Spoofing`
@@ -36,7 +35,6 @@ export namespace Cloaking {
         try {
             antiRoot();
             antiDebug();
-            sslPinningBypass();
             antiEmulation();
             deviceSpoofing();
             networkSpoofing();
@@ -68,14 +66,6 @@ export namespace Cloaking {
         Classes.Debug.perform();
     }
 
-    /**
-     * Perform hooks on the system to bypass SSL pinning validations.
-     */
-    function sslPinningBypass(): void {
-        Classes.SSLContext.perform();
-        Classes.X509TrustManager.perform();
-        Classes.TrustManagerImpl.perform();
-    }
 
     /**
      * Perform comprehensive anti-emulation hooks.
