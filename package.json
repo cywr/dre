@@ -1,7 +1,7 @@
 {
-  "name": "testing",
-  "version": "0.0.1",
-  "description": "",
+  "name": "DRE - Dynamic Reverse Engineering",
+  "description": "You've met with a terrible fate haven't you?",
+  "version": "1.0.0",
   "main": "source/index.ts",
   "authors": [
     {
@@ -9,21 +9,25 @@
       "email": "cnchwr@gmail.com"
     }
   ],
-  "private": true,
+  "private": false,
   "scripts": {
-    "lint": "tsc",
     "build": "frida-compile source/index.ts -o _build/index.js -c",
-    "start": "./run.sh",
-    "pull-dex": "./pull_dex.sh"
+    "start": "./source/scripts/run.sh",
+    "lint": "tsc",
+    "format": "prettier --write . >/dev/null",
+    "pull-dex": "./source/scripts/pull_dex.sh",
+    "proxy": "./source/scripts/proxy.sh",
+    "apps": "frida-ps -Uai --exclude-icons | grep -vE 'com.android|com.google.android|com.dolby|com.caf|com.topjohnwu.magisk|com.cybersandeep.fridalauncher|com.tsng.hidemyapplist|org.lsposed.manager|icu.nullptr.applistdetector'"
   },
   "devDependencies": {
     "@types/frida-gum": "^19.0.1",
-    "@types/node": "^22.0.0",
-    "frida": "^17.2.16",
+    "@types/node": "^25.2.0",
+    "frida": "^17.6.2",
     "frida-compile": "^19.0.4",
-    "typescript": "^5.6.0"
+    "prettier": "^3.8.1",
+    "typescript": "^5.9.3"
   },
   "dependencies": {
-    "frida-java-bridge": "^7.0.8"
+    "frida-java-bridge": "^7.0.11"
   }
 }

@@ -2,4 +2,4 @@
  * Interfaces exports
  */
 
-export * from './spoofing';
+export * from "./spoofing"

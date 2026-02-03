@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Navigate to project root
+cd "$(dirname "$0")/../.." || exit 1
+
 # Check if app name is provided
 if [ $# -eq 0 ]; then
     echo "Usage: ./run.sh <app-package-name>"

@@ -2,6 +2,9 @@
 
 # Pull DEX files from Android device to local _build folder
 
+# Navigate to project root
+cd "$(dirname "$0")/../.." || exit 1
+
 # Possible device paths in order of preference
 POSSIBLE_PATHS=(
     "/sdcard/Download/dre_extractions"

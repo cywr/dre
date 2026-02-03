@@ -1,1 +1,1 @@
-export { Libc as libc } from './libc';
+export { Libc as libc } from "./libc"
