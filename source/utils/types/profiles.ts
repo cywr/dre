@@ -8,6 +8,8 @@ import { NetworkType, SimState } from "../enums/android"
 
 export const COUNTRY_PROFILES: Record<Country, CountryProfile> = {
   [Country.SINGAPORE]: {
+    locale: { language: "en", country: "SG" },
+    timezone: "Asia/Singapore",
     device: {
       BRAND: "samsung",
       MODEL: "SM-S911B",
@@ -66,6 +68,8 @@ export const COUNTRY_PROFILES: Record<Country, CountryProfile> = {
   },
 
   [Country.MALAYSIA]: {
+    locale: { language: "ms", country: "MY" },
+    timezone: "Asia/Kuala_Lumpur",
     device: {
       BRAND: "samsung",
       MODEL: "SM-A546B",
@@ -124,6 +128,8 @@ export const COUNTRY_PROFILES: Record<Country, CountryProfile> = {
   },
 
   [Country.THAILAND]: {
+    locale: { language: "th", country: "TH" },
+    timezone: "Asia/Bangkok",
     device: {
       BRAND: "samsung",
       MODEL: "SM-A346B",
@@ -182,6 +188,8 @@ export const COUNTRY_PROFILES: Record<Country, CountryProfile> = {
   },
 
   [Country.INDONESIA]: {
+    locale: { language: "id", country: "ID" },
+    timezone: "Asia/Jakarta",
     device: {
       BRAND: "samsung",
       MODEL: "SM-A145F",
@@ -240,6 +248,8 @@ export const COUNTRY_PROFILES: Record<Country, CountryProfile> = {
   },
 
   [Country.PHILIPPINES]: {
+    locale: { language: "en", country: "PH" },
+    timezone: "Asia/Manila",
     device: {
       BRAND: "samsung",
       MODEL: "SM-A156B",
@@ -298,6 +308,8 @@ export const COUNTRY_PROFILES: Record<Country, CountryProfile> = {
   },
 
   [Country.VIETNAM]: {
+    locale: { language: "vi", country: "VN" },
+    timezone: "Asia/Ho_Chi_Minh",
     device: {
       BRAND: "samsung",
       MODEL: "SM-A256B",
@@ -356,6 +368,8 @@ export const COUNTRY_PROFILES: Record<Country, CountryProfile> = {
   },
 
   [Country.BRAZIL]: {
+    locale: { language: "pt", country: "BR" },
+    timezone: "America/Sao_Paulo",
     device: {
       BRAND: "samsung",
       MODEL: "SM-A546B",
@@ -414,6 +428,8 @@ export const COUNTRY_PROFILES: Record<Country, CountryProfile> = {
   },
 
   [Country.MEXICO]: {
+    locale: { language: "es", country: "MX" },
+    timezone: "America/Mexico_City",
     device: {
       BRAND: "samsung",
       MODEL: "SM-A346E",
@@ -472,6 +488,8 @@ export const COUNTRY_PROFILES: Record<Country, CountryProfile> = {
   },
 
   [Country.ARGENTINA]: {
+    locale: { language: "es", country: "AR" },
+    timezone: "America/Argentina/Buenos_Aires",
     device: {
       BRAND: "samsung",
       MODEL: "SM-A145M",
@@ -530,6 +548,8 @@ export const COUNTRY_PROFILES: Record<Country, CountryProfile> = {
   },
 
   [Country.COLOMBIA]: {
+    locale: { language: "es", country: "CO" },
+    timezone: "America/Bogota",
     device: {
       BRAND: "samsung",
       MODEL: "SM-A256M",
@@ -588,6 +608,8 @@ export const COUNTRY_PROFILES: Record<Country, CountryProfile> = {
   },
 
   [Country.CHILE]: {
+    locale: { language: "es", country: "CL" },
+    timezone: "America/Santiago",
     device: {
       BRAND: "samsung",
       MODEL: "SM-A546E",
@@ -646,6 +668,8 @@ export const COUNTRY_PROFILES: Record<Country, CountryProfile> = {
   },
 
   [Country.UNITED_STATES]: {
+    locale: { language: "en", country: "US" },
+    timezone: "America/New_York",
     device: {
       BRAND: "samsung",
       MODEL: "SM-S911U",
@@ -704,6 +728,8 @@ export const COUNTRY_PROFILES: Record<Country, CountryProfile> = {
   },
 
   [Country.GERMANY]: {
+    locale: { language: "de", country: "DE" },
+    timezone: "Europe/Berlin",
     device: {
       BRAND: "samsung",
       MODEL: "SM-S911B",
@@ -762,6 +788,8 @@ export const COUNTRY_PROFILES: Record<Country, CountryProfile> = {
   },
 
   [Country.FRANCE]: {
+    locale: { language: "fr", country: "FR" },
+    timezone: "Europe/Paris",
     device: {
       BRAND: "samsung",
       MODEL: "SM-A546B",
@@ -820,6 +848,8 @@ export const COUNTRY_PROFILES: Record<Country, CountryProfile> = {
   },
 
   [Country.UNITED_KINGDOM]: {
+    locale: { language: "en", country: "GB" },
+    timezone: "Europe/London",
     device: {
       BRAND: "samsung",
       MODEL: "SM-S911B",
@@ -878,6 +908,8 @@ export const COUNTRY_PROFILES: Record<Country, CountryProfile> = {
   },
 
   [Country.SPAIN]: {
+    locale: { language: "es", country: "ES" },
+    timezone: "Europe/Madrid",
     device: {
       BRAND: "samsung",
       MODEL: "SM-A346B",
@@ -936,6 +968,8 @@ export const COUNTRY_PROFILES: Record<Country, CountryProfile> = {
   },
 
   [Country.ITALY]: {
+    locale: { language: "it", country: "IT" },
+    timezone: "Europe/Rome",
     device: {
       BRAND: "samsung",
       MODEL: "SM-A546B",
@@ -994,6 +1028,8 @@ export const COUNTRY_PROFILES: Record<Country, CountryProfile> = {
   },
 
   [Country.PORTUGAL]: {
+    locale: { language: "pt", country: "PT" },
+    timezone: "Europe/Lisbon",
     device: {
       BRAND: "samsung",
       MODEL: "SM-A256B",

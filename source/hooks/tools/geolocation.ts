@@ -1,5 +1,6 @@
 import Java from "frida-java-bridge"
-import { log, LogType } from "../../utils/logger"
+import { log, logOnce, LogType, formatStackLog } from "../../utils/logger"
+import { getStackTrace, AccessEntry } from "../../utils/functions"
 import { Country } from "../../utils/enums"
 import { setActiveCountry, getActiveProfile } from "../../utils/types"
 
@@ -13,14 +14,7 @@ export namespace Geolocation {
 
   // ─── State ───────────────────────────────────────────────────────────
 
-  interface GeoAccessEntry {
-    timestamp: number
-    api: string
-    value: string
-    stack: string
-  }
-
-  let accessLog: GeoAccessEntry[] = []
+  let accessLog: AccessEntry[] = []
 
   // ─── Public ──────────────────────────────────────────────────────────
 
@@ -57,7 +51,7 @@ export namespace Geolocation {
     }
   }
 
-  export function getAccessLog(): GeoAccessEntry[] {
+  export function getAccessLog(): AccessEntry[] {
     return accessLog
   }
 
@@ -361,33 +355,48 @@ export namespace Geolocation {
     }
   }
 
-  // ─── Monitor Hooks (non-overlapping with class hooks) ──────────────
+  // ─── Locale & TimeZone Spoofing ──────────────────────────────────────
 
   function hookLocale(): void {
     try {
       const Locale = Java.use("java.util.Locale")
+      const profile = getActiveProfile()
+      const lang = profile.locale.language
+      const country = profile.locale.country
 
       try {
         Locale.getDefault.overload().implementation = function () {
           const result = this.getDefault()
+          const spoofed = Locale.$new(lang, country)
           const stack = getStackTrace()
           if (isAppCaller(stack)) {
-            recordAccess("Locale.getDefault", result.toString(), stack)
+            recordAccess("Locale.getDefault", `${result} -> ${lang}_${country}`, stack)
           }
-          return result
+          return spoofed
         }
       } catch (e) {
         log(LogType.Debug, NAME, `Could not hook Locale.getDefault: ${e}`)
       }
 
       try {
-        Locale.getCountry.implementation = function () {
-          const result = this.getCountry()
+        Locale.getDefault.overload("java.util.Locale$Category").implementation = function (category: any) {
+          const result = this.getDefault(category)
+          const spoofed = Locale.$new(lang, country)
           const stack = getStackTrace()
           if (isAppCaller(stack)) {
-            recordAccess("Locale.getCountry", result, stack)
+            recordAccess("Locale.getDefault(Category)", `${result} -> ${lang}_${country}`, stack)
           }
-          return result
+          return spoofed
+        }
+      } catch (e) {
+        log(LogType.Debug, NAME, `Could not hook Locale.getDefault(Category): ${e}`)
+      }
+
+      try {
+        Locale.getCountry.implementation = function () {
+          const result = this.getCountry()
+          log(LogType.Verbose, NAME, `Locale.getCountry: ${result} -> ${country}`)
+          return country
         }
       } catch (e) {
         log(LogType.Debug, NAME, `Could not hook Locale.getCountry: ${e}`)
@@ -396,17 +405,14 @@ export namespace Geolocation {
       try {
         Locale.getLanguage.implementation = function () {
           const result = this.getLanguage()
-          const stack = getStackTrace()
-          if (isAppCaller(stack)) {
-            recordAccess("Locale.getLanguage", result, stack)
-          }
-          return result
+          log(LogType.Verbose, NAME, `Locale.getLanguage: ${result} -> ${lang}`)
+          return lang
         }
       } catch (e) {
         log(LogType.Debug, NAME, `Could not hook Locale.getLanguage: ${e}`)
       }
 
-      log(LogType.Hook, NAME, `Locale monitoring hooked`)
+      log(LogType.Hook, NAME, `Locale spoofing enabled: ${lang}_${country}`)
     } catch (error) {
       log(LogType.Debug, NAME, `Locale hooks failed: ${error}`)
     }
@@ -415,15 +421,18 @@ export namespace Geolocation {
   function hookTimeZone(): void {
     try {
       const TimeZone = Java.use("java.util.TimeZone")
+      const profile = getActiveProfile()
+      const tzId = profile.timezone
 
       try {
         TimeZone.getDefault.implementation = function () {
           const result = this.getDefault()
+          const spoofed = TimeZone.getTimeZone(tzId)
           const stack = getStackTrace()
           if (isAppCaller(stack)) {
-            recordAccess("TimeZone.getDefault", result.getID(), stack)
+            recordAccess("TimeZone.getDefault", `${result.getID()} -> ${tzId}`, stack)
           }
-          return result
+          return spoofed
         }
       } catch (e) {
         log(LogType.Debug, NAME, `Could not hook TimeZone.getDefault: ${e}`)
@@ -434,15 +443,15 @@ export namespace Geolocation {
           const result = this.getID()
           const stack = getStackTrace()
           if (isAppCaller(stack)) {
-            recordAccess("TimeZone.getID", result, stack)
+            recordAccess("TimeZone.getID", `${result} -> ${tzId}`, stack)
           }
-          return result
+          return tzId
         }
       } catch (e) {
         log(LogType.Debug, NAME, `Could not hook TimeZone.getID: ${e}`)
       }
 
-      log(LogType.Hook, NAME, `TimeZone monitoring hooked`)
+      log(LogType.Hook, NAME, `TimeZone spoofing enabled: ${tzId}`)
     } catch (error) {
       log(LogType.Debug, NAME, `TimeZone hooks failed: ${error}`)
     }
@@ -454,6 +463,7 @@ export namespace Geolocation {
     const frameworkPrefixes = [
       "android.",
       "java.",
+      "javax.",
       "androidx.",
       "com.android.",
       "dalvik.",
@@ -477,29 +487,8 @@ export namespace Geolocation {
     return false
   }
 
-  function getStackTrace(): string {
-    try {
-      const Exception = Java.use("java.lang.Exception")
-      const exception = Exception.$new()
-      const stackElements = exception.getStackTrace()
-      const frames: string[] = []
-      const maxFrames = Math.min(stackElements.length, 10)
-      for (let i = 0; i < maxFrames; i++) {
-        frames.push(stackElements[i].toString())
-      }
-      return frames.join("\n    ")
-    } catch (e) {
-      return `[Could not get stack trace: ${e}]`
-    }
-  }
-
   function recordAccess(api: string, value: string, stack: string): void {
-    accessLog.push({
-      timestamp: Date.now(),
-      api,
-      value,
-      stack,
-    })
-    log(LogType.Hook, NAME, `${api}: ${value}\n    Stack: ${stack}`)
+    accessLog.push({ timestamp: Date.now(), api, value, stack })
+    logOnce(LogType.Hook, NAME, `${api}: ${value}${formatStackLog(stack)}`, `${api}:${value}`)
   }
 }

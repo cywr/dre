@@ -1,5 +1,31 @@
 import Java from "frida-java-bridge"
 
+// Shared access log entry type
+export interface AccessEntry {
+  timestamp: number
+  api: string
+  value: string
+  stack: string
+  category?: string
+}
+
+// Capture Java stack trace (always captures, for access log storage)
+export function getStackTrace(maxFrames: number = 10): string {
+  try {
+    const Exception = Java.use("java.lang.Exception")
+    const exception = Exception.$new()
+    const stackElements = exception.getStackTrace()
+    const frames: string[] = []
+    const limit = Math.min(stackElements.length, maxFrames)
+    for (let i = 0; i < limit; i++) {
+      frames.push(stackElements[i].toString())
+    }
+    return frames.join("\n    ")
+  } catch (e) {
+    return `[Could not get stack trace: ${e}]`
+  }
+}
+
 export var bin2ascii = function (input: any) {
   try {
     var buffer = Java.array("byte", input)

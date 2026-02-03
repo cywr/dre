@@ -74,12 +74,19 @@ export interface DrmInfo {
   description: string
 }
 
+export interface SpoofedLocale {
+  language: string
+  country: string
+}
+
 export interface CountryProfile {
   device: SpoofedDevice
   version: SpoofedVersion
   telephony: SpoofedTelephony
   display: DisplayMetrics
   location: SpoofedLocation
+  locale: SpoofedLocale
+  timezone: string
   userAgent: string
   drm: DrmInfo
 }

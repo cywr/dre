@@ -1,4 +1,4 @@
-import { log, LogType } from "../../utils/logger"
+import { log, logOnce, LogType } from "../../utils/logger"
 import { Native } from "./native"
 import Java from "frida-java-bridge"
 
@@ -61,10 +61,10 @@ export namespace SSLPinning {
         implements: [X509TrustManager],
         methods: {
           checkClientTrusted: function (chain: any, authType: any) {
-            log(LogType.Hook, NAME, `Custom TrustManager: checkClientTrusted bypassed`)
+            logOnce(LogType.Hook, NAME,`Custom TrustManager: checkClientTrusted bypassed`)
           },
           checkServerTrusted: function (chain: any, authType: any) {
-            log(LogType.Hook, NAME, `Custom TrustManager: checkServerTrusted bypassed`)
+            logOnce(LogType.Hook, NAME,`Custom TrustManager: checkServerTrusted bypassed`)
           },
           getAcceptedIssuers: function () {
             return []
@@ -78,7 +78,7 @@ export namespace SSLPinning {
           trustManagers: any,
           secureRandom: any,
         ) {
-          log(LogType.Hook, NAME, `SSLContext.init: replacing TrustManagers with custom bypass`)
+          logOnce(LogType.Hook, NAME,`SSLContext.init: replacing TrustManagers with custom bypass`)
           const customTrustManager = CustomTrustManager.$new()
           return this.init(keyManagers, [customTrustManager], secureRandom)
         }
@@ -104,13 +104,13 @@ export namespace SSLPinning {
         ocspData: any,
         tlsSctData: any,
       ) {
-        log(LogType.Hook, NAME, `TrustManagerImpl.checkTrustedRecursive: bypassed for ${host}`)
+        logOnce(LogType.Hook, NAME,`TrustManagerImpl.checkTrustedRecursive: bypassed for ${host}`)
         return Java.use("java.util.ArrayList").$new()
       }
 
       TrustManagerImpl.checkServerTrusted.overloads.forEach((overload: any) => {
         overload.implementation = function (...args: any) {
-          log(LogType.Hook, NAME, `TrustManagerImpl.checkServerTrusted: bypassed`)
+          logOnce(LogType.Hook, NAME,`TrustManagerImpl.checkServerTrusted: bypassed`)
           return Java.use("java.util.ArrayList").$new()
         }
       })
@@ -134,7 +134,7 @@ export namespace SSLPinning {
         implements: [HostnameVerifier],
         methods: {
           verify: function (hostname: any, session: any) {
-            log(LogType.Hook, NAME, `PermissiveHostnameVerifier: allowing ${hostname}`)
+            logOnce(LogType.Hook, NAME,`PermissiveHostnameVerifier: allowing ${hostname}`)
             return true
           },
         },
@@ -143,25 +143,17 @@ export namespace SSLPinning {
       const permissiveVerifier = PermissiveVerifier.$new()
 
       HttpsURLConnection.setDefaultHostnameVerifier.implementation = function (verifier: any) {
-        log(
-          LogType.Hook,
-          NAME,
-          `HttpsURLConnection.setDefaultHostnameVerifier: replacing with permissive verifier`,
-        )
+        logOnce(LogType.Hook, NAME,`HttpsURLConnection.setDefaultHostnameVerifier: replacing with permissive verifier`)
         this.setDefaultHostnameVerifier(permissiveVerifier)
       }
 
       HttpsURLConnection.setHostnameVerifier.implementation = function (verifier: any) {
-        log(
-          LogType.Hook,
-          NAME,
-          `HttpsURLConnection.setHostnameVerifier: replacing with permissive verifier`,
-        )
+        logOnce(LogType.Hook, NAME,`HttpsURLConnection.setHostnameVerifier: replacing with permissive verifier`)
         this.setHostnameVerifier(permissiveVerifier)
       }
 
       HttpsURLConnection.setSSLSocketFactory.implementation = function (factory: any) {
-        log(LogType.Hook, NAME, `HttpsURLConnection.setSSLSocketFactory: intercepted`)
+        logOnce(LogType.Hook, NAME,`HttpsURLConnection.setSSLSocketFactory: intercepted`)
         // Create a bypass SSLSocketFactory from our permissive SSLContext
         try {
           const SSLContext = Java.use("javax.net.ssl.SSLContext")
@@ -202,40 +194,9 @@ export namespace SSLPinning {
    */
   function bypassOkHttp3(): void {
     try {
-      let hooked = false
-
-      // Try default classloader first
-      try {
-        hookOkHttp3Pinner(Java.classFactory)
-        hooked = true
-      } catch (e) {
-        // Not in default classloader
-      }
-
-      // Enumerate classloaders for apps with multiple DEX files
-      if (!hooked) {
-        Java.enumerateClassLoaders({
-          onMatch: function (loader) {
-            if (hooked) return
-            try {
-              loader.loadClass("com.squareup.okhttp3.CertificatePinner")
-              const factory = Java.ClassFactory.get(loader)
-              hookOkHttp3Pinner(factory)
-              hooked = true
-              log(LogType.Hook, NAME, `OkHttp3 found in non-default classloader`)
-            } catch (e) {
-              // Not in this loader
-            }
-          },
-          onComplete: function () {},
-        })
-      }
-
-      if (!hooked) {
-        log(LogType.Debug, NAME, `OkHttp3 not found (app may not use it)`)
-      }
-    } catch (error) {
-      log(LogType.Error, NAME, `OkHttp3 bypass failed: ${error}`)
+      hookOkHttp3Pinner(Java.classFactory)
+    } catch (e) {
+      log(LogType.Debug, NAME, `OkHttp3 not found (app may not use it)`)
     }
   }
 
@@ -249,7 +210,7 @@ export namespace SSLPinning {
     try {
       CertificatePinner.check.overloads.forEach((overload: any) => {
         overload.implementation = function (...args: any) {
-          log(LogType.Hook, NAME, `OkHttp3 CertificatePinner.check: bypassed for ${args[0]}`)
+          logOnce(LogType.Hook, NAME,`OkHttp3 CertificatePinner.check: bypassed for ${args[0]}`)
           return
         }
       })
@@ -261,7 +222,7 @@ export namespace SSLPinning {
     try {
       CertificatePinner["check$okhttp"].overloads.forEach((overload: any) => {
         overload.implementation = function (...args: any) {
-          log(LogType.Hook, NAME, `OkHttp3 CertificatePinner.check$okhttp: bypassed for ${args[0]}`)
+          logOnce(LogType.Hook, NAME,`OkHttp3 CertificatePinner.check$okhttp: bypassed for ${args[0]}`)
           return
         }
       })
@@ -277,38 +238,9 @@ export namespace SSLPinning {
    */
   function bypassOkHttpLegacy(): void {
     try {
-      let hooked = false
-
-      try {
-        hookOkHttpLegacyPinner(Java.classFactory)
-        hooked = true
-      } catch (e) {
-        // Not in default classloader
-      }
-
-      if (!hooked) {
-        Java.enumerateClassLoaders({
-          onMatch: function (loader) {
-            if (hooked) return
-            try {
-              loader.loadClass("com.squareup.okhttp.CertificatePinner")
-              const factory = Java.ClassFactory.get(loader)
-              hookOkHttpLegacyPinner(factory)
-              hooked = true
-              log(LogType.Hook, NAME, `OkHttp legacy found in non-default classloader`)
-            } catch (e) {
-              // Not in this loader
-            }
-          },
-          onComplete: function () {},
-        })
-      }
-
-      if (!hooked) {
-        log(LogType.Debug, NAME, `OkHttp legacy not found (app may not use it)`)
-      }
-    } catch (error) {
-      log(LogType.Error, NAME, `OkHttp legacy bypass failed: ${error}`)
+      hookOkHttpLegacyPinner(Java.classFactory)
+    } catch (e) {
+      log(LogType.Debug, NAME, `OkHttp legacy not found (app may not use it)`)
     }
   }
 
@@ -320,7 +252,7 @@ export namespace SSLPinning {
 
     CertificatePinner.check.overloads.forEach((overload: any) => {
       overload.implementation = function (...args: any) {
-        log(LogType.Hook, NAME, `OkHttp legacy CertificatePinner.check: bypassed for ${args[0]}`)
+        logOnce(LogType.Hook, NAME,`OkHttp legacy CertificatePinner.check: bypassed for ${args[0]}`)
         return
       }
     })
@@ -340,7 +272,7 @@ export namespace SSLPinning {
         handler: any,
         error: any,
       ) {
-        log(LogType.Hook, NAME, `WebViewClient.onReceivedSslError: proceeding past SSL error`)
+        logOnce(LogType.Hook, NAME,`WebViewClient.onReceivedSslError: proceeding past SSL error`)
         handler.proceed()
       }
 
@@ -363,7 +295,7 @@ export namespace SSLPinning {
         )
         OkHostnameVerifier.verify.overloads.forEach((overload: any) => {
           overload.implementation = function (...args: any) {
-            log(LogType.Hook, NAME, `Trustkit OkHostnameVerifier.verify: bypassed`)
+            logOnce(LogType.Hook, NAME,`Trustkit OkHostnameVerifier.verify: bypassed`)
             return true
           }
         })
@@ -378,7 +310,7 @@ export namespace SSLPinning {
         )
         PinningTrustManager.checkServerTrusted.overloads.forEach((overload: any) => {
           overload.implementation = function (...args: any) {
-            log(LogType.Hook, NAME, `Trustkit PinningTrustManager.checkServerTrusted: bypassed`)
+            logOnce(LogType.Hook, NAME,`Trustkit PinningTrustManager.checkServerTrusted: bypassed`)
           }
         })
         found = true
@@ -432,7 +364,7 @@ export namespace SSLPinning {
                 targetAddr,
                 new NativeCallback(
                   function () {
-                    log(LogType.Hook, NAME, `Flutter SSL cert verification: bypassed`)
+                    logOnce(LogType.Hook, NAME,`Flutter SSL cert verification: bypassed`)
                     return 0x1 // Return 1 = valid
                   },
                   "int",
@@ -515,16 +447,44 @@ export namespace SSLPinning {
    */
   function bypassBoringSSL(): void {
     try {
-      const targetExports = ["SSL_CTX_set_custom_verify", "SSL_set_custom_verify"]
+      const customVerifyExports = ["SSL_CTX_set_custom_verify", "SSL_set_custom_verify"]
+      const standardVerifyExports = ["SSL_CTX_set_verify", "SSL_set_verify"]
+      const verifyResultExports = ["SSL_get_verify_result"]
 
       const modules = Process.enumerateModules()
 
       for (const mod of modules) {
-        for (const exportName of targetExports) {
+        // Hook custom verify (BoringSSL-specific)
+        for (const exportName of customVerifyExports) {
           try {
             const addr = mod.findExportByName(exportName)
             if (addr) {
               hookBoringSSLVerify(mod.name, exportName, addr)
+            }
+          } catch (e) {
+            // Export not in this module
+          }
+        }
+
+        // Hook standard SSL_CTX_set_verify / SSL_set_verify
+        // void SSL_CTX_set_verify(SSL_CTX *ctx, int mode, int (*callback)(int, X509_STORE_CTX *))
+        for (const exportName of standardVerifyExports) {
+          try {
+            const addr = mod.findExportByName(exportName)
+            if (addr) {
+              hookStandardSSLVerify(mod.name, exportName, addr)
+            }
+          } catch (e) {
+            // Export not in this module
+          }
+        }
+
+        // Hook SSL_get_verify_result to always return X509_V_OK (0)
+        for (const exportName of verifyResultExports) {
+          try {
+            const addr = mod.findExportByName(exportName)
+            if (addr) {
+              hookSSLGetVerifyResult(mod.name, addr)
             }
           } catch (e) {
             // Export not in this module
@@ -547,11 +507,7 @@ export namespace SSLPinning {
       // We intercept the call and replace the callback argument with one that returns ssl_verify_ok (0)
       const noOpVerifyCallback = new NativeCallback(
         function () {
-          log(
-            LogType.Hook,
-            NAME,
-            `BoringSSL verify callback (${moduleName}): returning ssl_verify_ok`,
-          )
+          logOnce(LogType.Hook, NAME,`BoringSSL verify callback (${moduleName}): returning ssl_verify_ok`)
           return 0 // ssl_verify_ok
         },
         "int",
@@ -560,7 +516,7 @@ export namespace SSLPinning {
 
       Interceptor.attach(addr, {
         onEnter: function (args) {
-          log(LogType.Hook, NAME, `${moduleName}::${exportName}: replacing verify callback`)
+          logOnce(LogType.Hook, NAME,`${moduleName}::${exportName}: replacing verify callback`)
           args[2] = noOpVerifyCallback
         },
       })
@@ -568,6 +524,68 @@ export namespace SSLPinning {
       log(LogType.Hook, NAME, `BoringSSL bypass enabled for ${moduleName}::${exportName}`)
     } catch (error) {
       log(LogType.Error, NAME, `BoringSSL hook failed for ${moduleName}::${exportName}: ${error}`)
+    }
+  }
+
+  /**
+   * Hook standard SSL_CTX_set_verify / SSL_set_verify to replace the verify callback
+   * with one that always returns 1 (success). This is the standard OpenSSL/BoringSSL API
+   * used by Chromium WebView for certificate validation.
+   */
+  function hookStandardSSLVerify(
+    moduleName: string,
+    exportName: string,
+    addr: NativePointer,
+  ): void {
+    try {
+      // int (*verify_callback)(int preverify_ok, X509_STORE_CTX *x509_ctx)
+      const alwaysOkCallback = new NativeCallback(
+        function (_preverifyOk: number, _x509Ctx: NativePointer) {
+          return 1 // Always return 1 = OK
+        },
+        "int",
+        ["int", "pointer"],
+      )
+
+      // SSL_CTX_set_verify(SSL_CTX *ctx, int mode, verify_callback)
+      Interceptor.attach(addr, {
+        onEnter(args) {
+          // Replace verify callback (arg[2]) with our always-ok callback
+          args[2] = alwaysOkCallback
+        },
+      })
+
+      log(LogType.Hook, NAME, `BoringSSL bypass enabled for ${moduleName}::${exportName}`)
+    } catch (error) {
+      log(
+        LogType.Error,
+        NAME,
+        `Standard SSL verify hook failed for ${moduleName}::${exportName}: ${error}`,
+      )
+    }
+  }
+
+  /**
+   * Hook SSL_get_verify_result to always return X509_V_OK (0).
+   * This covers verification checks done after the handshake completes.
+   */
+  function hookSSLGetVerifyResult(moduleName: string, addr: NativePointer): void {
+    try {
+      Interceptor.attach(addr, {
+        onLeave(retval) {
+          if (retval.toInt32() !== 0) {
+            retval.replace(ptr(0)) // X509_V_OK = 0
+          }
+        },
+      })
+
+      log(LogType.Hook, NAME, `BoringSSL bypass enabled for ${moduleName}::SSL_get_verify_result`)
+    } catch (error) {
+      log(
+        LogType.Error,
+        NAME,
+        `SSL_get_verify_result hook failed for ${moduleName}: ${error}`,
+      )
     }
   }
 }

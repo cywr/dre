@@ -17,10 +17,11 @@ import {
 } from "./hooks"
 import { Scratchpad } from "./scratchpad"
 import { Country } from "./utils/enums"
-import { LogLevel, setLogLevel } from "./utils/logger"
+import { LogLevel, setLogLevel, setShowStackTraces } from "./utils/logger"
 import { setActiveCountry } from "./utils/types"
 
 setLogLevel(LogLevel.INFO)
+setShowStackTraces(false)
 setActiveCountry(Country.SINGAPORE)
 
 if (Java.available) {
@@ -50,8 +51,11 @@ if (Java.available) {
         "com.google.android.gms",
         "com.facebook.ads",
         "com.appsflyer",
-        "com.adjust",
         "com.crashlytics",
+        "adjust",
+        "WebViewChromiumPrefs",
+        "WebViewProfilePrefs",
+        "AwOriginVisitLoggerPrefs",
       ],
     )
 

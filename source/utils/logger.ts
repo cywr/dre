@@ -41,7 +41,17 @@ if (G.__dre_logger === undefined) {
       [LogType.None]:    -1,
     } as Record<number, number>,
     reset: "\x1b[0m",
+    showStackTraces: false,
+    seen: new Set<string>(),
   }
+}
+
+export function setShowStackTraces(show: boolean): void {
+  G.__dre_logger.showStackTraces = show
+}
+
+export function getShowStackTraces(): boolean {
+  return G.__dre_logger.showStackTraces ?? false
 }
 
 export function setLogLevel(level: LogLevel): void {
@@ -50,6 +60,19 @@ export function setLogLevel(level: LogLevel): void {
 
 export function getLogLevel(): LogLevel {
   return G.__dre_logger.level
+}
+
+export function logOnce(type: LogType, title: string, text: string, dedupKey?: string): boolean {
+  const key = dedupKey ?? text
+  if (G.__dre_logger.seen.has(key)) return false
+  G.__dre_logger.seen.add(key)
+  log(type, title, text)
+  return true
+}
+
+export function formatStackLog(stack: string): string {
+  if (!getShowStackTraces()) return ""
+  return `\n    Stack: ${stack}`
 }
 
 export function log(type: LogType = LogType.None, title: string = "", text: string) {

@@ -16,7 +16,7 @@ iptables -t nat -A OUTPUT -p tcp -d $ip --dport 8080 -j RETURN
 iptables -t nat -A OUTPUT -p tcp --dport 80  -j DNAT --to-destination $ip:8080
 iptables -t nat -A OUTPUT -p tcp --dport 443 -j DNAT --to-destination $ip:8080
 
-# Fix source NAT
-iptables -t nat -A POSTROUTING -p tcp --dport 80  -j MASQUERADE
-iptables -t nat -A POSTROUTING -p tcp --dport 443 -j MASQUERADE
+# Block QUIC/HTTP3 (UDP 443) so WebView falls back to TCP
+# Without this, Chromium WebView uses QUIC which bypasses TCP iptables rules
+iptables -A OUTPUT -p udp --dport 443 -j DROP
 '"

@@ -1,5 +1,6 @@
 import Java from "frida-java-bridge"
-import { log, LogType } from "../../utils/logger"
+import { log, LogType, formatStackLog } from "../../utils/logger"
+import { getStackTrace, AccessEntry } from "../../utils/functions"
 import { getActiveProfile } from "../../utils/types"
 
 /**
@@ -14,15 +15,7 @@ export namespace PIIWatcher {
 
   // ─── State ───────────────────────────────────────────────────────────
 
-  interface PIIAccessEntry {
-    timestamp: number
-    api: string
-    category: string
-    value: string
-    stack: string
-  }
-
-  let accessLog: PIIAccessEntry[] = []
+  let accessLog: AccessEntry[] = []
 
   // ─── URI Classification ──────────────────────────────────────────────
 
@@ -82,7 +75,7 @@ export namespace PIIWatcher {
     }
   }
 
-  export function getAccessLog(): PIIAccessEntry[] {
+  export function getAccessLog(): AccessEntry[] {
     return accessLog
   }
 
@@ -468,30 +461,8 @@ export namespace PIIWatcher {
     return "OTHER_APP_DATA"
   }
 
-  function getStackTrace(): string {
-    try {
-      const Exception = Java.use("java.lang.Exception")
-      const exception = Exception.$new()
-      const stackElements = exception.getStackTrace()
-      const frames: string[] = []
-      const maxFrames = Math.min(stackElements.length, 10)
-      for (let i = 0; i < maxFrames; i++) {
-        frames.push(stackElements[i].toString())
-      }
-      return frames.join("\n    ")
-    } catch (e) {
-      return `[Could not get stack trace: ${e}]`
-    }
-  }
-
   function recordAccess(api: string, category: string, value: string, stack: string): void {
-    accessLog.push({
-      timestamp: Date.now(),
-      api,
-      category,
-      value,
-      stack,
-    })
-    log(LogType.Hook, NAME, `[${category}] ${api}: ${value}\n    Stack: ${stack}`)
+    accessLog.push({ timestamp: Date.now(), api, category, value, stack })
+    log(LogType.Hook, NAME, `[${category}] ${api}: ${value}${formatStackLog(stack)}`)
   }
 }

@@ -1,4 +1,4 @@
-import { log, LogType } from "../../utils/logger"
+import { log, logOnce, LogType } from "../../utils/logger"
 import * as Utils from "../../utils/functions"
 import { DexExtractor } from "../../utils/dexextractor"
 import Java from "frida-java-bridge"
@@ -8,6 +8,13 @@ import Java from "frida-java-bridge"
  */
 export namespace Base64 {
   const NAME = "[Base64]"
+  const MAX_LOG_LEN = 200
+
+  function truncate(s: string): string {
+    if (s.length <= MAX_LOG_LEN) return s
+    return s.substring(0, MAX_LOG_LEN) + `... (${s.length} chars)`
+  }
+
   export function perform(): void {
     try {
       decode()
@@ -28,17 +35,22 @@ export namespace Base64 {
         if (args.length === 2) {
           // decode(string/byte[], flags) - args[0] could be string or byte array
           const input = typeof args[0] === "string" ? args[0] : Utils.bin2ascii(args[0])
-          log(
+          const key = input.substring(0, 64)
+          logOnce(
             LogType.Hook,
             NAME,
-            `Base64.decode\n - Input: ${input}\n - Output: ${Utils.bin2ascii(output)}`,
+            `Base64.decode\n - Input: ${truncate(input)}\n - Output: ${truncate(Utils.bin2ascii(output))}`,
+            key,
           )
         } else if (args.length === 4) {
           // decode(byte[], offset, length, flags)
-          log(
+          const input = Utils.bin2ascii(args[0])
+          const key = input.substring(0, 64)
+          logOnce(
             LogType.Hook,
             NAME,
-            `Base64.decode\n - Input: ${Utils.bin2ascii(args[0])}\n - Output: ${Utils.bin2ascii(output)}`,
+            `Base64.decode\n - Input: ${truncate(input)}\n - Output: ${truncate(Utils.bin2ascii(output))}`,
+            key,
           )
         }
 
@@ -58,10 +70,13 @@ export namespace Base64 {
     Base64.encode.overloads.forEach((overload: any) => {
       overload.implementation = function (...args: any) {
         var output = this.encode(...args)
-        log(
+        const input = Utils.bin2ascii(args[0])
+        const key = input.substring(0, 64)
+        logOnce(
           LogType.Hook,
           NAME,
-          `Base64.encode\n - Input: ${Utils.bin2ascii(args[0])}\n - Output: ${Utils.bin2ascii(output)}`,
+          `Base64.encode\n - Input: ${truncate(input)}\n - Output: ${truncate(Utils.bin2ascii(output))}`,
+          key,
         )
 
         // Check if input or output is DEX and extract if so
@@ -79,10 +94,13 @@ export namespace Base64 {
     Base64.encodeToString.overloads.forEach((overload: any) => {
       overload.implementation = function (...args: any) {
         var output = this.encodeToString(...args)
-        log(
+        const input = Utils.bin2ascii(args[0])
+        const key = input.substring(0, 64)
+        logOnce(
           LogType.Hook,
           NAME,
-          `Base64.encodeToString\n - Input: ${Utils.bin2ascii(args[0])}\n - Output: ${output}`,
+          `Base64.encodeToString\n - Input: ${truncate(input)}\n - Output: ${truncate(output)}`,
+          key,
         )
 
         // Check if input is DEX and extract if so

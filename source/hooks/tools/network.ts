@@ -1,5 +1,6 @@
 import Java from "frida-java-bridge"
-import { log, LogType } from "../../utils/logger"
+import { log, logOnce, LogType, formatStackLog } from "../../utils/logger"
+import { getStackTrace, AccessEntry } from "../../utils/functions"
 
 /**
  * Network Monitor & Spoof
@@ -11,15 +12,7 @@ export namespace NetworkMonitor {
 
   // ─── State ───────────────────────────────────────────────────────────
 
-  interface NetAccessEntry {
-    timestamp: number
-    api: string
-    value: string
-    stack: string
-  }
-
-  let accessLog: NetAccessEntry[] = []
-  let seenDomains = new Set<string>()
+  let accessLog: AccessEntry[] = []
 
   // ─── Public ──────────────────────────────────────────────────────────
 
@@ -33,7 +26,9 @@ export namespace NetworkMonitor {
         `\n║ ├── WiFi: WifiInfo` +
         `\n║ ├── DNS: InetAddress` +
         `\n║ ├── Interfaces: NetworkInterface` +
-        `\n║ └── Connections: URL.openConnection` +
+        `\n║ ├── Connections: URL.openConnection` +
+        `\n║ ├── HTTP Headers: custom request headers` +
+        `\n║ └── HTTP Response: status, content-type, length` +
         `\n╙────────────────────────────────────────────┘`,
     )
   }
@@ -49,12 +44,14 @@ export namespace NetworkMonitor {
       // Additional monitoring (non-overlapping APIs)
       hookNetworkInterface()
       hookURLConnection()
+      hookHTTPRequestHeaders()
+      hookHTTPResponseMetadata()
     } catch (error) {
       log(LogType.Error, NAME, `Network hooks failed: \n${error}`)
     }
   }
 
-  export function getAccessLog(): NetAccessEntry[] {
+  export function getAccessLog(): AccessEntry[] {
     return accessLog
   }
 
@@ -264,12 +261,11 @@ export namespace NetworkMonitor {
             domain = urlStr
           }
 
-          if (!seenDomains.has(domain)) {
-            seenDomains.add(domain)
-            const stack = getStackTrace()
-            recordAccess("URL.openConnection", `domain=${domain}`, stack)
+          const stack = getStackTrace()
+          if (logOnce(LogType.Hook, NAME, `URL.openConnection: ${urlStr}${formatStackLog(stack)}`, domain)) {
+            accessLog.push({ timestamp: Date.now(), api: "URL.openConnection", value: urlStr, stack })
           } else {
-            log(LogType.Verbose, NAME, `URL.openConnection: ${domain} (repeat)`)
+            log(LogType.Verbose, NAME, `URL.openConnection: ${urlStr} (repeat)`)
           }
 
           return this.openConnection(...args)
@@ -282,31 +278,91 @@ export namespace NetworkMonitor {
     }
   }
 
-  // ─── Utilities ───────────────────────────────────────────────────────
+  // ─── HTTP Headers ────────────────────────────────────────────────────
 
-  function getStackTrace(): string {
+  const STANDARD_HEADERS = new Set([
+    "content-type", "accept", "user-agent", "host", "connection",
+    "accept-encoding", "content-length", "accept-language",
+    "cache-control", "cookie", "authorization", "transfer-encoding",
+  ])
+
+  function hookHTTPRequestHeaders(): void {
     try {
-      const Exception = Java.use("java.lang.Exception")
-      const exception = Exception.$new()
-      const stackElements = exception.getStackTrace()
-      const frames: string[] = []
-      const maxFrames = Math.min(stackElements.length, 10)
-      for (let i = 0; i < maxFrames; i++) {
-        frames.push(stackElements[i].toString())
+      const HttpURLConnection = Java.use("java.net.HttpURLConnection")
+
+      HttpURLConnection.setRequestProperty.implementation = function (key: any, value: any) {
+        try {
+          const keyStr = key ? key.toString() : ""
+          const keyLower = keyStr.toLowerCase()
+
+          if (!STANDARD_HEADERS.has(keyLower)) {
+            let url = ""
+            try {
+              url = this.getURL().toString()
+            } catch (_) {
+              url = "[unknown]"
+            }
+            const stack = getStackTrace()
+            const dedupKey = `header:${url}:${keyLower}`
+
+            if (logOnce(LogType.Hook, NAME, `[HTTP Header] ${url}\n  ${keyStr}: ${value}${formatStackLog(stack)}`, dedupKey)) {
+              accessLog.push({ timestamp: Date.now(), api: "HTTP.setRequestProperty", value: `${url} ${keyStr}: ${value}`, stack })
+            }
+          }
+        } catch (e) {
+          log(LogType.Debug, NAME, `HTTP header logging failed: ${e}`)
+        }
+
+        return this.setRequestProperty(key, value)
       }
-      return frames.join("\n    ")
-    } catch (e) {
-      return `[Could not get stack trace: ${e}]`
+
+      log(LogType.Hook, NAME, `HTTP request header monitoring hooked`)
+    } catch (error) {
+      log(LogType.Debug, NAME, `HTTP request header hooks failed: ${error}`)
     }
   }
 
+  // ─── HTTP Response ──────────────────────────────────────────────────
+
+  function hookHTTPResponseMetadata(): void {
+    try {
+      const HttpURLConnection = Java.use("java.net.HttpURLConnection")
+
+      HttpURLConnection.getResponseCode.implementation = function () {
+        const code = this.getResponseCode()
+
+        try {
+          let url = ""
+          try { url = this.getURL().toString() } catch (_) { url = "[unknown]" }
+
+          let contentType = ""
+          try { contentType = this.getContentType() || "" } catch (_) { contentType = "[error]" }
+
+          let contentLength = -1
+          try { contentLength = this.getContentLength() } catch (_) { /* ignore */ }
+
+          const dedupKey = `response:${url}`
+
+          if (logOnce(LogType.Hook, NAME, `[HTTP Response] ${url} status=${code} type=${contentType} length=${contentLength}`, dedupKey)) {
+            accessLog.push({ timestamp: Date.now(), api: "HTTP.getResponseCode", value: `${url} status=${code} type=${contentType} length=${contentLength}`, stack: "" })
+          }
+        } catch (e) {
+          log(LogType.Debug, NAME, `HTTP response logging failed: ${e}`)
+        }
+
+        return code
+      }
+
+      log(LogType.Hook, NAME, `HTTP response metadata monitoring hooked`)
+    } catch (error) {
+      log(LogType.Debug, NAME, `HTTP response metadata hooks failed: ${error}`)
+    }
+  }
+
+  // ─── Utilities ───────────────────────────────────────────────────────
+
   function recordAccess(api: string, value: string, stack: string): void {
-    accessLog.push({
-      timestamp: Date.now(),
-      api,
-      value,
-      stack,
-    })
-    log(LogType.Hook, NAME, `${api}: ${value}\n    Stack: ${stack}`)
+    accessLog.push({ timestamp: Date.now(), api, value, stack })
+    log(LogType.Hook, NAME, `${api}: ${value}${formatStackLog(stack)}`)
   }
 }

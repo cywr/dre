@@ -1,4 +1,5 @@
-import { log, LogType } from "../../utils/logger"
+import { log, logOnce, LogType, formatStackLog } from "../../utils/logger"
+import { getStackTrace } from "../../utils/functions"
 import Java from "frida-java-bridge"
 
 /**
@@ -51,7 +52,7 @@ export namespace Attribution {
         `\n╓─┬\x1b[31m Attribution & Install Referrer Monitor \x1b[0m` +
         `\n║ ├── AppsFlyer: init, start, ConversionListener (via init callback)` +
         `\n║ ├── Google Install Referrer: Client, ReferrerDetails` +
-        `\n║ └── WebView Correlation: loadUrl, loadDataWithBaseURL, addJavascriptInterface` +
+        `\n║ └── WebView Correlation: loadUrl, loadDataWithBaseURL, addJavascriptInterface, evaluateJavascript` +
         `\n╙──────────────────────────────────────────────────────────────────────────────┘`,
     )
   }
@@ -73,6 +74,7 @@ export namespace Attribution {
     hookWebViewLoadUrl()
     hookWebViewLoadDataWithBaseURL()
     hookWebViewAddJavascriptInterface()
+    hookWebViewEvaluateJavascript()
   }
 
   // ─── Section 1: AppsFlyer Direct ─────────────────────────────────────
@@ -92,7 +94,7 @@ export namespace Attribution {
             `AppsFlyerLib.init() called` +
               `\n  Dev Key: ${devKey}` +
               `\n  Listener: ${listener ? listener.$className : "null"}` +
-              `\n  Stack: ${getStackTrace()}`,
+              formatStackLog(getStackTrace(15)),
           )
 
           // Hook the listener instance if provided
@@ -133,7 +135,7 @@ export namespace Attribution {
           NAME,
           `[CONVERSION DATA] ${className}.onConversionDataSuccess()` +
             `\n  ${dumpJavaMap(data)}` +
-            `\n  Stack: ${getStackTrace()}`,
+            formatStackLog(getStackTrace(15)),
         )
         return this.onConversionDataSuccess(data)
       }
@@ -187,7 +189,7 @@ export namespace Attribution {
             log(
               LogType.Hook,
               NAME,
-              `[MAP KEY] HashMap.get("${keyStr}") = ${result}` + `\n  Stack: ${getStackTrace()}`,
+              `[MAP KEY] HashMap.get("${keyStr}") = ${result}` + formatStackLog(getStackTrace(15)),
             )
           }
         }
@@ -245,7 +247,7 @@ export namespace Attribution {
             LogType.Hook,
             NAME,
             `[REFERRER] ReferrerDetails.getInstallReferrer(): ${referrer}` +
-              `\n  Stack: ${getStackTrace()}`,
+              formatStackLog(getStackTrace(15)),
           )
           return referrer
         }
@@ -320,7 +322,7 @@ export namespace Attribution {
       WebView.loadUrl.overloads.forEach((overload: any) => {
         overload.implementation = function (...args: any) {
           const url = args[0]
-          log(LogType.Hook, NAME, `WebView.loadUrl(): ${url}` + `\n  Stack: ${getStackTrace()}`)
+          log(LogType.Hook, NAME, `WebView.loadUrl(): ${url}` + formatStackLog(getStackTrace(15)))
           logCorrelation(url ? url.toString() : "")
           return this.loadUrl(...args)
         }
@@ -376,12 +378,125 @@ export namespace Attribution {
             `\n  Bridge name: ${name}` +
             `\n  Object class: ${objClass}`,
         )
+
+        if (obj && name) {
+          try {
+            hookJsBridgeMethods(obj, objClass, name.toString())
+          } catch (e) {
+            log(LogType.Debug, NAME, `Could not hook JS bridge methods for ${name}: ${e}`)
+          }
+        }
+
         return this.addJavascriptInterface(obj, name)
       }
 
       log(LogType.Hook, NAME, `WebView.addJavascriptInterface hooked`)
     } catch (error) {
       log(LogType.Debug, NAME, `WebView.addJavascriptInterface hook failed: ${error}`)
+    }
+  }
+
+  // ─── JS Bridge Method Hooks ──────────────────────────────────────────
+
+  function hookJsBridgeMethods(obj: any, className: string, bridgeName: string): void {
+    try {
+      const javaObj = Java.cast(obj, Java.use("java.lang.Object"))
+      const methods = javaObj.getClass().getDeclaredMethods()
+      let hookedCount = 0
+
+      for (let i = 0; i < methods.length; i++) {
+        try {
+          const method = methods[i]
+          const annotations = method.getAnnotations()
+          let isJsInterface = false
+
+          for (let a = 0; a < annotations.length; a++) {
+            if (annotations[a].annotationType().getName() === "android.webkit.JavascriptInterface") {
+              isJsInterface = true
+              break
+            }
+          }
+
+          if (!isJsInterface) continue
+
+          const methodName = method.getName()
+          const paramTypes = method.getParameterTypes()
+          const paramTypeNames: string[] = []
+          for (let p = 0; p < paramTypes.length; p++) {
+            paramTypeNames.push(paramTypes[p].getName())
+          }
+
+          const cls = Java.use(className)
+          const overload = cls[methodName].overload(...paramTypeNames)
+
+          overload.implementation = function (...args: any) {
+            try {
+              const argStrs = args.map((a: any) => {
+                const s = a !== null && a !== undefined ? a.toString() : "null"
+                return s.length > 200 ? s.substring(0, 200) + "..." : s
+              })
+              const dedupKey = `jsbridge:${bridgeName}:${methodName}`
+              logOnce(
+                LogType.Hook,
+                NAME,
+                `[JS Bridge Call] ${bridgeName}.${methodName}(${argStrs.join(", ")})` +
+                  `\n  Class: ${className}` +
+                  formatStackLog(getStackTrace()),
+                dedupKey,
+              )
+            } catch (e) {
+              log(LogType.Debug, NAME, `JS bridge call logging failed: ${e}`)
+            }
+
+            return this[methodName](...args)
+          }
+
+          hookedCount++
+        } catch (e) {
+          log(LogType.Debug, NAME, `Could not hook bridge method at index ${i}: ${e}`)
+        }
+      }
+
+      if (hookedCount > 0) {
+        log(LogType.Hook, NAME, `Hooked ${hookedCount} @JavascriptInterface methods on ${bridgeName} (${className})`)
+      }
+    } catch (e) {
+      log(LogType.Debug, NAME, `hookJsBridgeMethods failed for ${bridgeName}: ${e}`)
+    }
+  }
+
+  // ─── evaluateJavascript ─────────────────────────────────────────────
+
+  function hookWebViewEvaluateJavascript(): void {
+    try {
+      const WebView = Java.use("android.webkit.WebView")
+
+      WebView.evaluateJavascript.implementation = function (script: any, callback: any) {
+        try {
+          const scriptStr = script ? script.toString() : ""
+          const snippet = scriptStr.length > 500 ? scriptStr.substring(0, 500) + "..." : scriptStr
+          const hasCallback = callback !== null
+          const dedupKey = `evaljs:${scriptStr.substring(0, 80)}`
+
+          logOnce(
+            LogType.Hook,
+            NAME,
+            `[evaluateJavascript]` +
+              `\n  Script (first 500): ${snippet}` +
+              `\n  Has callback: ${hasCallback}` +
+              formatStackLog(getStackTrace()),
+            dedupKey,
+          )
+        } catch (e) {
+          log(LogType.Debug, NAME, `evaluateJavascript logging failed: ${e}`)
+        }
+
+        return this.evaluateJavascript(script, callback)
+      }
+
+      log(LogType.Hook, NAME, `WebView.evaluateJavascript hooked`)
+    } catch (error) {
+      log(LogType.Debug, NAME, `WebView.evaluateJavascript hook failed: ${error}`)
     }
   }
 
@@ -401,24 +516,6 @@ export namespace Attribution {
       return entries.join("\n  ")
     } catch (e) {
       return `[Could not dump map: ${e}]`
-    }
-  }
-
-  function getStackTrace(): string {
-    try {
-      const Exception = Java.use("java.lang.Exception")
-      const exception = Exception.$new()
-      const stackElements = exception.getStackTrace()
-      const frames: string[] = []
-      const maxFrames = Math.min(stackElements.length, 15)
-
-      for (let i = 0; i < maxFrames; i++) {
-        frames.push(stackElements[i].toString())
-      }
-
-      return frames.join("\n    ")
-    } catch (e) {
-      return `[Could not get stack trace: ${e}]`
     }
   }
 
