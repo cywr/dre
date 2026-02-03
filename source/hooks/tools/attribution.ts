@@ -5,6 +5,11 @@ import Java from "frida-java-bridge"
  * Attribution & Install Referrer Monitor
  * Detects apps using AppsFlyer conversion data and Google Install Referrer
  * to dynamically load WebView content. Purely observational — monitors and logs only.
+ *
+ * NOTE: Java.enumerateLoadedClasses and Java.enumerateClassLoaders are avoided
+ * because they cause ART interpreter crashes (SIGSEGV in ExecuteSwitchImplCpp)
+ * on Android 13 ARM64 with Frida 17.6.2. All class lookups use direct Java.use()
+ * with try/catch instead.
  */
 export namespace Attribution {
   const NAME = "[Attribution]"
@@ -44,9 +49,8 @@ export namespace Attribution {
       NAME,
       `LogType: Hook` +
         `\n╓─┬\x1b[31m Attribution & Install Referrer Monitor \x1b[0m` +
-        `\n║ ├── AppsFlyer: ConversionListener, init, start` +
+        `\n║ ├── AppsFlyer: init, start, ConversionListener (via init callback)` +
         `\n║ ├── Google Install Referrer: Client, ReferrerDetails` +
-        `\n║ ├── Obfuscation: Interface enumeration, Map.get() key monitoring` +
         `\n║ └── WebView Correlation: loadUrl, loadDataWithBaseURL, addJavascriptInterface` +
         `\n╙──────────────────────────────────────────────────────────────────────────────┘`,
     )
@@ -55,19 +59,17 @@ export namespace Attribution {
   export function perform(enableMapMonitoring: boolean = false): void {
     info()
 
-    // Section 1: AppsFlyer Direct Hooks
+    // Section 1: AppsFlyer Direct Hooks (no class enumeration)
     hookAppsFlyerDirect()
 
-    // Section 2: AppsFlyer Obfuscation-Resistant Detection
-    hookAppsFlyerObfuscated()
     if (enableMapMonitoring) {
       hookMapGetForAttributionKeys()
     }
 
-    // Section 3: Google Install Referrer Hooks
+    // Section 2: Google Install Referrer Hooks (no class enumeration)
     hookInstallReferrerDirect()
 
-    // Section 4: WebView URL Monitoring
+    // Section 3: WebView URL Monitoring
     hookWebViewLoadUrl()
     hookWebViewLoadDataWithBaseURL()
     hookWebViewAddJavascriptInterface()
@@ -77,116 +79,48 @@ export namespace Attribution {
 
   function hookAppsFlyerDirect(): void {
     try {
-      let hooked = false
+      const AppsFlyerLib = Java.use("com.appsflyer.AppsFlyerLib")
 
-      // Try default classloader first
-      try {
-        hookAppsFlyerInit(Java.classFactory)
-        hookAppsFlyerStart(Java.classFactory)
-        hookConversionListener(Java.classFactory)
-        hooked = true
-      } catch (e) {
-        // Not in default classloader
-      }
+      // Hook init — also captures ConversionListener when passed as arg
+      AppsFlyerLib.init.overloads.forEach((overload: any) => {
+        overload.implementation = function (...args: any) {
+          const devKey = args[0]
+          const listener = args[1]
+          log(
+            LogType.Hook,
+            NAME,
+            `AppsFlyerLib.init() called` +
+              `\n  Dev Key: ${devKey}` +
+              `\n  Listener: ${listener ? listener.$className : "null"}` +
+              `\n  Stack: ${getStackTrace()}`,
+          )
 
-      // Enumerate classloaders for apps with multiple DEX files
-      if (!hooked) {
-        Java.enumerateClassLoaders({
-          onMatch: function (loader) {
-            if (hooked) return
+          // Hook the listener instance if provided
+          if (listener) {
             try {
-              loader.loadClass("com.appsflyer.AppsFlyerLib")
-              const factory = Java.ClassFactory.get(loader)
-              hookAppsFlyerInit(factory)
-              hookAppsFlyerStart(factory)
-              hookConversionListener(factory)
-              hooked = true
-              log(LogType.Hook, NAME, `AppsFlyer found in non-default classloader`)
+              const listenerClass = Java.cast(listener, Java.use("java.lang.Object")).$className
+              const cls = Java.use(listenerClass)
+              hookListenerMethods(cls, listenerClass)
             } catch (e) {
-              // Not in this loader
+              log(LogType.Debug, NAME, `Could not hook listener from init: ${e}`)
             }
-          },
-          onComplete: function () {},
-        })
-      }
-
-      if (!hooked) {
-        log(LogType.Debug, NAME, `AppsFlyer SDK not found (app may not use it)`)
-      }
-    } catch (error) {
-      log(LogType.Debug, NAME, `AppsFlyer direct hooks failed: ${error}`)
-    }
-  }
-
-  function hookAppsFlyerInit(factory: Java.ClassFactory): void {
-    const AppsFlyerLib = factory.use("com.appsflyer.AppsFlyerLib")
-
-    AppsFlyerLib.init.overloads.forEach((overload: any) => {
-      overload.implementation = function (...args: any) {
-        const devKey = args[0]
-        const listener = args[1]
-        log(
-          LogType.Hook,
-          NAME,
-          `AppsFlyerLib.init() called` +
-            `\n  Dev Key: ${devKey}` +
-            `\n  Listener: ${listener ? listener.$className : "null"}` +
-            `\n  Stack: ${getStackTrace()}`,
-        )
-
-        // Hook the listener instance if provided
-        if (listener) {
-          try {
-            const listenerClass = Java.cast(listener, factory.use("java.lang.Object")).$className
-            const cls = factory.use(listenerClass)
-            hookListenerMethods(cls, listenerClass)
-          } catch (e) {
-            log(LogType.Debug, NAME, `Could not hook listener from init: ${e}`)
           }
+
+          return this.init(...args)
         }
-
-        return this.init(...args)
-      }
-    })
-
-    log(LogType.Hook, NAME, `AppsFlyerLib.init hooked`)
-  }
-
-  function hookAppsFlyerStart(factory: Java.ClassFactory): void {
-    const AppsFlyerLib = factory.use("com.appsflyer.AppsFlyerLib")
-
-    AppsFlyerLib.start.overloads.forEach((overload: any) => {
-      overload.implementation = function (...args: any) {
-        log(LogType.Hook, NAME, `AppsFlyerLib.start() called`)
-        return this.start(...args)
-      }
-    })
-
-    log(LogType.Hook, NAME, `AppsFlyerLib.start hooked`)
-  }
-
-  function hookConversionListener(factory: Java.ClassFactory): void {
-    try {
-      Java.enumerateLoadedClasses({
-        onMatch: function (className) {
-          try {
-            const cls = factory.use(className)
-            const ifaces = cls.class.getInterfaces()
-            for (let i = 0; i < ifaces.length; i++) {
-              if (ifaces[i].getName() === "com.appsflyer.AppsFlyerConversionListener") {
-                log(LogType.Hook, NAME, `Found ConversionListener impl: ${className}`)
-                hookListenerMethods(cls, className)
-                return
-              }
-            }
-          } catch (e) {
-            // Skip classes that can't be loaded
-          }
-        },
-        onComplete: function () {},
       })
-    } catch (error) {
-      log(LogType.Debug, NAME, `ConversionListener enumeration failed: ${error}`)
+
+      // Hook start
+      AppsFlyerLib.start.overloads.forEach((overload: any) => {
+        overload.implementation = function (...args: any) {
+          log(LogType.Hook, NAME, `AppsFlyerLib.start() called`)
+          return this.start(...args)
+        }
+      })
+
+      log(LogType.Hook, NAME, `AppsFlyer SDK hooked`)
+    } catch (e) {
+      log(LogType.Debug, NAME, `AppsFlyer SDK not found (app may not use it)`)
     }
   }
 
@@ -241,91 +175,6 @@ export namespace Attribution {
     log(LogType.Hook, NAME, `ConversionListener methods hooked on ${className}`)
   }
 
-  // ─── Section 2: AppsFlyer Obfuscation-Resistant ──────────────────────
-
-  function hookAppsFlyerObfuscated(): void {
-    try {
-      findConversionListenerImplementations()
-    } catch (error) {
-      log(LogType.Debug, NAME, `Obfuscated AppsFlyer detection failed: ${error}`)
-    }
-  }
-
-  function findConversionListenerImplementations(): void {
-    Java.enumerateLoadedClasses({
-      onMatch: function (className) {
-        try {
-          const cls = Java.use(className)
-          const ifaces = cls.class.getInterfaces()
-
-          for (let i = 0; i < ifaces.length; i++) {
-            const iface = ifaces[i]
-            const methods = iface.getDeclaredMethods()
-
-            // Match interface shape: exactly 4 methods, 2 with Map param, 2 with String param
-            if (methods.length === 4) {
-              let mapCount = 0
-              let stringCount = 0
-
-              for (let j = 0; j < methods.length; j++) {
-                const paramTypes = methods[j].getParameterTypes()
-                if (paramTypes.length === 1) {
-                  const paramName = paramTypes[0].getName()
-                  if (paramName === "java.util.Map") mapCount++
-                  else if (paramName === "java.lang.String") stringCount++
-                }
-              }
-
-              if (mapCount === 2 && stringCount === 2) {
-                // Skip if it's the actual non-obfuscated interface
-                if (iface.getName() === "com.appsflyer.AppsFlyerConversionListener") continue
-
-                log(
-                  LogType.Hook,
-                  NAME,
-                  `[OBFUSCATED] Potential ConversionListener impl found: ${className} (interface: ${iface.getName()})`,
-                )
-                hookObfuscatedListenerMethods(cls, className, iface)
-              }
-            }
-          }
-        } catch (e) {
-          // Skip classes that can't be loaded
-        }
-      },
-      onComplete: function () {},
-    })
-  }
-
-  function hookObfuscatedListenerMethods(cls: any, className: string, iface: any): void {
-    const methods = iface.getDeclaredMethods()
-
-    for (let i = 0; i < methods.length; i++) {
-      const method = methods[i]
-      const methodName = method.getName()
-      const paramTypes = method.getParameterTypes()
-
-      if (paramTypes.length === 1 && paramTypes[0].getName() === "java.util.Map") {
-        try {
-          cls[methodName].implementation = function (data: any) {
-            lastConversionData = data
-            log(
-              LogType.Hook,
-              NAME,
-              `[OBFUSCATED CONVERSION DATA] ${className}.${methodName}()` +
-                `\n  ${dumpJavaMap(data)}` +
-                `\n  Stack: ${getStackTrace()}`,
-            )
-            return this[methodName](data)
-          }
-          log(LogType.Hook, NAME, `Hooked obfuscated Map method: ${className}.${methodName}`)
-        } catch (e) {
-          log(LogType.Debug, NAME, `Could not hook ${className}.${methodName}: ${e}`)
-        }
-      }
-    }
-  }
-
   function hookMapGetForAttributionKeys(): void {
     try {
       const HashMap = Java.use("java.util.HashMap")
@@ -351,120 +200,88 @@ export namespace Attribution {
     }
   }
 
-  // ─── Section 3: Google Install Referrer ──────────────────────────────
+  // ─── Section 2: Google Install Referrer ──────────────────────────────
 
   function hookInstallReferrerDirect(): void {
     try {
-      let hooked = false
-
-      try {
-        hookInstallReferrerClient(Java.classFactory)
-        hookReferrerDetails(Java.classFactory)
-        hooked = true
-      } catch (e) {
-        // Not in default classloader
-      }
-
-      if (!hooked) {
-        Java.enumerateClassLoaders({
-          onMatch: function (loader) {
-            if (hooked) return
-            try {
-              loader.loadClass("com.android.installreferrer.api.InstallReferrerClient")
-              const factory = Java.ClassFactory.get(loader)
-              hookInstallReferrerClient(factory)
-              hookReferrerDetails(factory)
-              hooked = true
-              log(LogType.Hook, NAME, `Install Referrer found in non-default classloader`)
-            } catch (e) {
-              // Not in this loader
-            }
-          },
-          onComplete: function () {},
-        })
-      }
-
-      if (!hooked) {
-        log(LogType.Debug, NAME, `Install Referrer SDK not found (app may not use it)`)
-      }
-    } catch (error) {
-      log(LogType.Debug, NAME, `Install Referrer hooks failed: ${error}`)
-    }
-  }
-
-  function hookInstallReferrerClient(factory: Java.ClassFactory): void {
-    const InstallReferrerClient = factory.use(
-      "com.android.installreferrer.api.InstallReferrerClient",
-    )
-
-    InstallReferrerClient.startConnection.implementation = function (listener: any) {
-      log(
-        LogType.Hook,
-        NAME,
-        `InstallReferrerClient.startConnection()` +
-          `\n  Listener: ${listener ? listener.$className : "null"}`,
+      const InstallReferrerClient = Java.use(
+        "com.android.installreferrer.api.InstallReferrerClient",
       )
 
-      // Hook the listener's callback
-      if (listener) {
-        try {
-          hookInstallReferrerStateListener(listener, factory)
-        } catch (e) {
-          log(LogType.Debug, NAME, `Could not hook referrer state listener: ${e}`)
-        }
-      }
-
-      return this.startConnection(listener)
-    }
-
-    log(LogType.Hook, NAME, `InstallReferrerClient.startConnection hooked`)
-  }
-
-  function hookReferrerDetails(factory: Java.ClassFactory): void {
-    const ReferrerDetails = factory.use("com.android.installreferrer.api.ReferrerDetails")
-
-    try {
-      ReferrerDetails.getInstallReferrer.implementation = function () {
-        const referrer = this.getInstallReferrer()
-        lastReferrerString = referrer ? referrer.toString() : null
+      InstallReferrerClient.startConnection.implementation = function (listener: any) {
         log(
           LogType.Hook,
           NAME,
-          `[REFERRER] ReferrerDetails.getInstallReferrer(): ${referrer}` +
-            `\n  Stack: ${getStackTrace()}`,
+          `InstallReferrerClient.startConnection()` +
+            `\n  Listener: ${listener ? listener.$className : "null"}`,
         )
-        return referrer
+
+        // Hook the listener's callback
+        if (listener) {
+          try {
+            hookInstallReferrerStateListener(listener)
+          } catch (e) {
+            log(LogType.Debug, NAME, `Could not hook referrer state listener: ${e}`)
+          }
+        }
+
+        return this.startConnection(listener)
       }
+
+      log(LogType.Hook, NAME, `InstallReferrerClient.startConnection hooked`)
     } catch (e) {
-      log(LogType.Debug, NAME, `Could not hook getInstallReferrer: ${e}`)
+      // Try ReferrerDetails separately — the client class may not exist
+      // but the details class might be available
     }
 
     try {
-      ReferrerDetails.getReferrerClickTimestampSeconds.implementation = function () {
-        const ts = this.getReferrerClickTimestampSeconds()
-        log(LogType.Hook, NAME, `ReferrerDetails.getReferrerClickTimestampSeconds(): ${ts}`)
-        return ts
-      }
-    } catch (e) {
-      log(LogType.Debug, NAME, `Could not hook getReferrerClickTimestampSeconds: ${e}`)
-    }
+      const ReferrerDetails = Java.use("com.android.installreferrer.api.ReferrerDetails")
 
-    try {
-      ReferrerDetails.getInstallBeginTimestampSeconds.implementation = function () {
-        const ts = this.getInstallBeginTimestampSeconds()
-        log(LogType.Hook, NAME, `ReferrerDetails.getInstallBeginTimestampSeconds(): ${ts}`)
-        return ts
+      try {
+        ReferrerDetails.getInstallReferrer.implementation = function () {
+          const referrer = this.getInstallReferrer()
+          lastReferrerString = referrer ? referrer.toString() : null
+          log(
+            LogType.Hook,
+            NAME,
+            `[REFERRER] ReferrerDetails.getInstallReferrer(): ${referrer}` +
+              `\n  Stack: ${getStackTrace()}`,
+          )
+          return referrer
+        }
+      } catch (e) {
+        log(LogType.Debug, NAME, `Could not hook getInstallReferrer: ${e}`)
       }
-    } catch (e) {
-      log(LogType.Debug, NAME, `Could not hook getInstallBeginTimestampSeconds: ${e}`)
-    }
 
-    log(LogType.Hook, NAME, `ReferrerDetails hooked`)
+      try {
+        ReferrerDetails.getReferrerClickTimestampSeconds.implementation = function () {
+          const ts = this.getReferrerClickTimestampSeconds()
+          log(LogType.Hook, NAME, `ReferrerDetails.getReferrerClickTimestampSeconds(): ${ts}`)
+          return ts
+        }
+      } catch (e) {
+        log(LogType.Debug, NAME, `Could not hook getReferrerClickTimestampSeconds: ${e}`)
+      }
+
+      try {
+        ReferrerDetails.getInstallBeginTimestampSeconds.implementation = function () {
+          const ts = this.getInstallBeginTimestampSeconds()
+          log(LogType.Hook, NAME, `ReferrerDetails.getInstallBeginTimestampSeconds(): ${ts}`)
+          return ts
+        }
+      } catch (e) {
+        log(LogType.Debug, NAME, `Could not hook getInstallBeginTimestampSeconds: ${e}`)
+      }
+
+      log(LogType.Hook, NAME, `ReferrerDetails hooked`)
+    } catch (e) {
+      log(LogType.Debug, NAME, `Install Referrer SDK not found (app may not use it)`)
+    }
   }
 
-  function hookInstallReferrerStateListener(listener: any, factory: Java.ClassFactory): void {
-    const listenerClassName = Java.cast(listener, factory.use("java.lang.Object")).$className
-    const listenerCls = factory.use(listenerClassName)
+  function hookInstallReferrerStateListener(listener: any): void {
+    const listenerClassName = Java.cast(listener, Java.use("java.lang.Object")).$className
+    const listenerCls = Java.use(listenerClassName)
 
     const RESPONSE_CODES: Record<number, string> = {
       0: "OK",
@@ -494,7 +311,7 @@ export namespace Attribution {
     }
   }
 
-  // ─── Section 4: WebView URL Monitoring ───────────────────────────────
+  // ─── Section 3: WebView URL Monitoring ───────────────────────────────
 
   function hookWebViewLoadUrl(): void {
     try {

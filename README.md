@@ -8,11 +8,7 @@ Frida-based Android reverse engineering toolkit with modular anti-detection bypa
 - **Frida** installed globally:
 
 ```bash
-pnpm add -g @frida/tools
-# or
-npm install -g @frida/tools
-# or
-pip install frida-tools
+pipx install frida-tools
 ```
 
 - **Android device** with USB debugging enabled and Frida server running
@@ -90,26 +86,26 @@ setActiveCountry(Country.SINGAPORE)
 
 ### Available Countries
 
-| Enum                | Code | Region         |
-| ------------------- | ---- | -------------- |
-| `SINGAPORE`         | SG   | Southeast Asia |
-| `MALAYSIA`          | MY   | Southeast Asia |
-| `THAILAND`          | TH   | Southeast Asia |
-| `INDONESIA`         | ID   | Southeast Asia |
-| `PHILIPPINES`       | PH   | Southeast Asia |
-| `VIETNAM`           | VN   | Southeast Asia |
-| `BRAZIL`            | BR   | Latin America  |
-| `MEXICO`            | MX   | Latin America  |
-| `ARGENTINA`         | AR   | Latin America  |
-| `COLOMBIA`          | CO   | Latin America  |
-| `CHILE`             | CL   | Latin America  |
-| `UNITED_STATES`     | US   | North America  |
-| `GERMANY`           | DE   | Europe         |
-| `FRANCE`            | FR   | Europe         |
-| `UNITED_KINGDOM`    | GB   | Europe         |
-| `SPAIN`             | ES   | Europe         |
-| `ITALY`             | IT   | Europe         |
-| `PORTUGAL`          | PT   | Europe         |
+| Enum             | Code | Region         |
+| ---------------- | ---- | -------------- |
+| `SINGAPORE`      | SG   | Southeast Asia |
+| `MALAYSIA`       | MY   | Southeast Asia |
+| `THAILAND`       | TH   | Southeast Asia |
+| `INDONESIA`      | ID   | Southeast Asia |
+| `PHILIPPINES`    | PH   | Southeast Asia |
+| `VIETNAM`        | VN   | Southeast Asia |
+| `BRAZIL`         | BR   | Latin America  |
+| `MEXICO`         | MX   | Latin America  |
+| `ARGENTINA`      | AR   | Latin America  |
+| `COLOMBIA`       | CO   | Latin America  |
+| `CHILE`          | CL   | Latin America  |
+| `UNITED_STATES`  | US   | North America  |
+| `GERMANY`        | DE   | Europe         |
+| `FRANCE`         | FR   | Europe         |
+| `UNITED_KINGDOM` | GB   | Europe         |
+| `SPAIN`          | ES   | Europe         |
+| `ITALY`          | IT   | Europe         |
+| `PORTUGAL`       | PT   | Europe         |
 
 ### What Profiles Include
 

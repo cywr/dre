@@ -1,12 +1,3 @@
-enum Color {
-  Red = "\x1b[31m",
-  Yellow = "\x1b[33m",
-  Green = "\x1b[32m",
-  Blue = "\x1b[34m",
-  Cyan = "\x1b[36m",
-  Magenta = "\x1b[35m",
-}
-
 export enum LogType {
   Info,
   Config,
@@ -24,60 +15,54 @@ export enum LogLevel {
   VERBOSE = 3,
 }
 
-let currentLogLevel: LogLevel = LogLevel.INFO
+// All logger state lives on globalThis so it's accessible from any thread
+// context. Java hook callbacks run on ART threads where frida-compile
+// module closures may not resolve correctly.
+const G = globalThis as any
+
+if (G.__dre_logger === undefined) {
+  G.__dre_logger = {
+    level: LogLevel.INFO as number,
+    prefixes: {
+      [LogType.Info]:    "\x1b[36m[i]",
+      [LogType.Config]:  "\x1b[34m[*]",
+      [LogType.Hook]:    "\x1b[32m[+]",
+      [LogType.Debug]:   "\x1b[33m[?]",
+      [LogType.Verbose]: "\x1b[35m[v]",
+      [LogType.Error]:   "\x1b[31m[!]",
+    } as Record<number, string>,
+    thresholds: {
+      [LogType.Error]:   LogLevel.ERROR,
+      [LogType.Info]:    LogLevel.INFO,
+      [LogType.Config]:  LogLevel.INFO,
+      [LogType.Hook]:    LogLevel.INFO,
+      [LogType.Debug]:   LogLevel.DEBUG,
+      [LogType.Verbose]: LogLevel.VERBOSE,
+      [LogType.None]:    -1,
+    } as Record<number, number>,
+    reset: "\x1b[0m",
+  }
+}
 
 export function setLogLevel(level: LogLevel): void {
-  currentLogLevel = level
+  G.__dre_logger.level = level
 }
 
 export function getLogLevel(): LogLevel {
-  return currentLogLevel
-}
-
-function shouldLog(type: LogType): boolean {
-  switch (type) {
-    case LogType.Error:
-      return currentLogLevel >= LogLevel.ERROR
-    case LogType.Info:
-    case LogType.Config:
-    case LogType.Hook:
-      return currentLogLevel >= LogLevel.INFO
-    case LogType.Debug:
-      return currentLogLevel >= LogLevel.DEBUG
-    case LogType.Verbose:
-      return currentLogLevel >= LogLevel.VERBOSE
-    case LogType.None:
-    default:
-      return true
-  }
+  return G.__dre_logger.level
 }
 
 export function log(type: LogType = LogType.None, title: string = "", text: string) {
-  if (!shouldLog(type)) {
+  const logger = G.__dre_logger
+  const threshold = logger.thresholds[type]
+  if (threshold !== undefined && threshold >= 0 && logger.level < threshold) {
     return
   }
 
-  switch (type) {
-    case LogType.Info:
-      console.log(Color.Cyan + "[i]" + title + "\x1b[0m " + text)
-      break
-    case LogType.Config:
-      console.log(Color.Blue + "[*]" + title + "\x1b[0m " + text)
-      break
-    case LogType.Hook:
-      console.log(Color.Green + "[+]" + title + "\x1b[0m " + text)
-      break
-    case LogType.Debug:
-      console.log(Color.Yellow + "[?]" + title + "\x1b[0m " + text)
-      break
-    case LogType.Verbose:
-      console.log(Color.Magenta + "[v]" + title + "\x1b[0m " + text)
-      break
-    case LogType.Error:
-      console.log(Color.Red + "[!]" + title + "\x1b[0m " + text)
-      break
-    default:
-      console.log("[ ]" + title + " " + text)
-      break
+  const prefix = logger.prefixes[type]
+  if (prefix) {
+    console.log(prefix + title + logger.reset + " " + text)
+  } else {
+    console.log("[ ]" + title + " " + text)
   }
 }

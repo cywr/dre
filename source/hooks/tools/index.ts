@@ -1,6 +1,8 @@
+export { AntiFrida } from "./antifrida"
 export { AntiRoot } from "./antiroot"
 export { AntiDebug } from "./antidebug"
 export { AntiEmulation } from "./antiemulation"
+export { AntiTamper } from "./antitamper"
 export { DeviceSpoofing } from "./device"
 export { Geolocation } from "./geolocation"
 export { NetworkMonitor } from "./network"

@@ -254,8 +254,6 @@ export namespace AntiEmulation {
       log(LogType.Verbose, NAME, "Hooking System.loadLibrary() overloads...")
 
       const System = Java.use("java.lang.System")
-      const Runtime = Java.use("java.lang.Runtime")
-      const VMStack = Java.use("dalvik.system.VMStack")
       const VERSION = Java.use("android.os.Build$VERSION")
 
       System.loadLibrary.overloads.forEach((overload: any) => {
@@ -263,16 +261,30 @@ export namespace AntiEmulation {
           log(LogType.Debug, NAME, `JNI loadLibrary: ${args[0]}`)
 
           try {
+            const Runtime = Java.use("java.lang.Runtime")
+
             if (VERSION.SDK_INT.value >= 29) {
-              Runtime.getRuntime().loadLibrary0(
-                Java.use("sun.reflect.Reflection").getCallerClass(),
-                args[0],
-              )
-            } else if (VERSION.SDK_INT.value >= 24) {
-              Runtime.getRuntime().loadLibrary0(VMStack.getCallingClassLoader(), args[0])
-            } else {
-              Runtime.getRuntime().loadLibrary(args[0], VMStack.getCallingClassLoader())
+              try {
+                const Reflection = Java.use("sun.reflect.Reflection")
+                Runtime.getRuntime().loadLibrary0(Reflection.getCallerClass(), args[0])
+                return
+              } catch (e) {
+                log(LogType.Debug, NAME, `SDK 29+ reflection path failed: ${e}`)
+              }
             }
+
+            if (VERSION.SDK_INT.value >= 24) {
+              try {
+                const VMStack = Java.use("dalvik.system.VMStack")
+                Runtime.getRuntime().loadLibrary0(VMStack.getCallingClassLoader(), args[0])
+                return
+              } catch (e) {
+                log(LogType.Debug, NAME, `SDK 24+ VMStack path failed: ${e}`)
+              }
+            }
+
+            // Fallback: call original
+            return this.loadLibrary(...args)
           } catch (error) {
             log(LogType.Debug, NAME, `loadLibrary implementation error: ${error}`)
             return this.loadLibrary(...args)
@@ -284,16 +296,35 @@ export namespace AntiEmulation {
     }
   }
 
+  /** Environment variable keys that indicate instrumentation or rooting */
+  const ENV_FILTER_KEYWORDS = ["frida", "xposed", "substrate", "magisk", "supersu"]
+
   function hookGetEnvironment(): void {
     try {
       const System = Java.use("java.lang.System")
 
       System.getenv.overload().implementation = function () {
-        const ret = this.getenv()
+        const realMap = this.getenv()
+        const HashMap = Java.use("java.util.HashMap")
         const Collections = Java.use("java.util.Collections")
+        const filtered = HashMap.$new()
 
-        log(LogType.Debug, NAME, "getenv: returning empty map for security")
-        return Collections.emptyMap()
+        const entries = realMap.entrySet()
+        const iterator = entries.iterator()
+
+        while (iterator.hasNext()) {
+          const entry = iterator.next()
+          const key = entry.getKey().toString().toLowerCase()
+
+          if (ENV_FILTER_KEYWORDS.some((kw) => key.includes(kw))) {
+            log(LogType.Debug, NAME, `getenv: filtering key "${entry.getKey()}"`)
+            continue
+          }
+
+          filtered.put(entry.getKey(), entry.getValue())
+        }
+
+        return Collections.unmodifiableMap(filtered)
       }
     } catch (error) {
       log(LogType.Error, NAME, `System.getenv hook failed: ${error}`)

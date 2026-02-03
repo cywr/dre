@@ -167,13 +167,14 @@ export namespace AntiRoot {
 
       File.exists.implementation = function () {
         const name = this.getName()
-        const override = FILE_SYSTEM[name]
+        const path = this.getAbsolutePath()
+        const override = FILE_SYSTEM[path]
 
         if (ROOT_BINARIES.includes(name)) {
-          log(LogType.Info, NAME, `File.exists: ${name} -> false`)
+          log(LogType.Info, NAME, `File.exists: ${path} -> false`)
           return false
         } else if (override && override.exists !== undefined) {
-          log(LogType.Info, NAME, `File.exists: ${name} -> ${override.exists}`)
+          log(LogType.Info, NAME, `File.exists: ${path} -> ${override.exists}`)
           return override.exists
         } else {
           return this.exists.call(this)
@@ -181,11 +182,11 @@ export namespace AntiRoot {
       }
 
       File.canWrite.implementation = function () {
-        const name = this.getName()
-        const override = FILE_SYSTEM[name]
+        const path = this.getAbsolutePath()
+        const override = FILE_SYSTEM[path]
 
         if (override && override.write !== undefined) {
-          log(LogType.Info, NAME, `File.canWrite: ${name} -> ${override.write}`)
+          log(LogType.Info, NAME, `File.canWrite: ${path} -> ${override.write}`)
           return override.write
         } else {
           return this.canWrite.call(this)
@@ -193,11 +194,11 @@ export namespace AntiRoot {
       }
 
       File.canRead.implementation = function () {
-        const name = this.getName()
-        const override = FILE_SYSTEM[name]
+        const path = this.getAbsolutePath()
+        const override = FILE_SYSTEM[path]
 
         if (override && override.read !== undefined) {
-          log(LogType.Info, NAME, `File.canRead: ${name} -> ${override.read}`)
+          log(LogType.Info, NAME, `File.canRead: ${path} -> ${override.read}`)
           return override.read
         } else {
           return this.canRead.call(this)
@@ -212,13 +213,6 @@ export namespace AntiRoot {
     try {
       const File = Java.use("java.io.File")
       const FileInputStream = Java.use("java.io.FileInputStream")
-
-      File.$init.overloads.forEach((overload) => {
-        overload.implementation = function (...args: any[]) {
-          log(LogType.Debug, NAME, `New file: ${args}`)
-          return overload.call(this, ...args)
-        }
-      })
 
       try {
         const fileInputStreamConstr = FileInputStream.$init.overload("java.io.File")
