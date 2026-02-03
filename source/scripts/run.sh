@@ -10,6 +10,19 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
+# Ensure frida native binding exists (prebuild-install can silently fail during pnpm install)
+FRIDA_BINDING="node_modules/.pnpm/frida@*/node_modules/frida/build/frida_binding.node"
+if ! ls $FRIDA_BINDING &> /dev/null; then
+    echo "Frida native binding missing, downloading prebuild..."
+    FRIDA_DIR=$(ls -d node_modules/.pnpm/frida@*/node_modules/frida 2>/dev/null | head -1)
+    if [ -n "$FRIDA_DIR" ]; then
+        (cd "$FRIDA_DIR" && npx prebuild-install --verbose)
+    else
+        echo "Frida package not found. Run pnpm install first."
+        exit 1
+    fi
+fi
+
 echo "Building project..."
 pnpm run build
 
