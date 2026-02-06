@@ -17,6 +17,8 @@
     "format": "prettier --write . >/dev/null",
     "pull-dex": "./source/scripts/pull_dex.sh",
     "proxy": "./source/scripts/proxy.sh",
+    "clear": "./source/scripts/clear_app.sh",
+    "uninstall-apps": "./source/scripts/uninstall_apps.sh",
     "apps": "frida-ps -Uai --exclude-icons | grep -vE 'com.android|com.google.android|com.dolby|com.caf|com.topjohnwu.magisk|com.cybersandeep.fridalauncher|com.tsng.hidemyapplist|org.lsposed.manager|icu.nullptr.applistdetector'"
   },
   "devDependencies": {

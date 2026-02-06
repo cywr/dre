@@ -1,4 +1,5 @@
 import { log, LogType } from "../../utils/logger"
+import { DCL_IGNORE_LIST } from "../../utils/types/constants"
 import Java from "frida-java-bridge"
 
 /**
@@ -7,6 +8,13 @@ import Java from "frida-java-bridge"
  */
 export namespace DCL {
   const NAME = "[DCL]"
+
+  function shouldFilter(className: string): boolean {
+    const stripped = className.replace(/^\[+L?/, "").replace(/;$/, "")
+    const normalized = stripped.replaceAll("/", ".")
+    return DCL_IGNORE_LIST.some((pkg) => normalized.startsWith(pkg))
+  }
+
   export function perform(): void {
     try {
       hookDexClassLoader()
@@ -25,8 +33,13 @@ export namespace DCL {
       DexClassLoader.loadClass.overloads.forEach((overload: any) => {
         overload.implementation = function (...args: any) {
           const className = args[0]
-          log(LogType.Hook, NAME, `DexClassLoader.loadClass: ${className}`)
           const result = this.loadClass(...args)
+
+          if (shouldFilter(className)) {
+            return result
+          }
+
+          log(LogType.Hook, NAME, `DexClassLoader.loadClass: ${className}`)
 
           if (result && className) {
             hookLoadedClass(result, className)
@@ -47,8 +60,13 @@ export namespace DCL {
       PathClassLoader.loadClass.overloads.forEach((overload: any) => {
         overload.implementation = function (...args: any) {
           const className = args[0]
-          log(LogType.Hook, NAME, `PathClassLoader.loadClass: ${className}`)
           const result = this.loadClass(...args)
+
+          if (shouldFilter(className)) {
+            return result
+          }
+
+          log(LogType.Hook, NAME, `PathClassLoader.loadClass: ${className}`)
 
           if (result && className) {
             hookLoadedClass(result, className)
@@ -69,8 +87,13 @@ export namespace DCL {
       InMemoryDexClassLoader.loadClass.overloads.forEach((overload: any) => {
         overload.implementation = function (...args: any) {
           const className = args[0]
-          log(LogType.Hook, NAME, `InMemoryDexClassLoader.loadClass: ${className}`)
           const result = this.loadClass(...args)
+
+          if (shouldFilter(className)) {
+            return result
+          }
+
+          log(LogType.Hook, NAME, `InMemoryDexClassLoader.loadClass: ${className}`)
 
           if (result && className) {
             hookLoadedClass(result, className)
@@ -91,8 +114,13 @@ export namespace DCL {
       BaseDexClassLoader.findClass.overloads.forEach((overload: any) => {
         overload.implementation = function (...args: any) {
           const className = args[0]
-          log(LogType.Hook, NAME, `BaseDexClassLoader.findClass: ${className}`)
           const result = this.findClass(...args)
+
+          if (shouldFilter(className)) {
+            return result
+          }
+
+          log(LogType.Hook, NAME, `BaseDexClassLoader.findClass: ${className}`)
 
           if (result && className) {
             hookLoadedClass(result, className)
@@ -108,14 +136,7 @@ export namespace DCL {
 
   function hookLoadedClass(clazz: any, className: string) {
     try {
-      // Skip system classes to reduce noise
-      if (
-        className.startsWith("java.") ||
-        className.startsWith("android.") ||
-        className.startsWith("androidx.") ||
-        className.startsWith("dalvik.") ||
-        className.startsWith("com.android.")
-      ) {
+      if (shouldFilter(className)) {
         return
       }
 

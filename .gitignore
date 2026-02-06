@@ -1,3 +1,5 @@
 node_modules/
 _build/
 .DS_Store
+CLAUDE.md
+malwares/

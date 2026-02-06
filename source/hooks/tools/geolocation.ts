@@ -379,7 +379,9 @@ export namespace Geolocation {
       }
 
       try {
-        Locale.getDefault.overload("java.util.Locale$Category").implementation = function (category: any) {
+        Locale.getDefault.overload("java.util.Locale$Category").implementation = function (
+          category: any,
+        ) {
           const result = this.getDefault(category)
           const spoofed = Locale.$new(lang, country)
           const stack = getStackTrace()

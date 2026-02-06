@@ -116,20 +116,28 @@ export namespace AntiTamper {
 
   const GUARD_KEY = "__dre_antitamper_native__"
 
-  const SYSCALL_NUMBERS: Record<string, { exit: number; exit_group: number; kill: number; tgkill: number; tkill: number; getpid: number }> = {
+  const SYSCALL_NUMBERS: Record<
+    string,
+    {
+      exit: number
+      exit_group: number
+      kill: number
+      tgkill: number
+      tkill: number
+      getpid: number
+    }
+  > = {
     arm64: { exit: 93, exit_group: 94, kill: 129, tgkill: 131, tkill: 130, getpid: 172 },
-    arm:   { exit: 1,  exit_group: 248, kill: 37,  tgkill: 270, tkill: 238, getpid: 20 },
-    x64:   { exit: 60, exit_group: 231, kill: 62,  tgkill: 234, tkill: 200, getpid: 39 },
-    ia32:  { exit: 1,  exit_group: 252, kill: 37,  tgkill: 270, tkill: 238, getpid: 20 },
+    arm: { exit: 1, exit_group: 248, kill: 37, tgkill: 270, tkill: 238, getpid: 20 },
+    x64: { exit: 60, exit_group: 231, kill: 62, tgkill: 234, tkill: 200, getpid: 39 },
+    ia32: { exit: 1, exit_group: 252, kill: 37, tgkill: 270, tkill: 238, getpid: 20 },
   }
 
   // Signals commonly used by anti-tamper to kill the process.
   // EXCLUDES SIGSEGV(11), SIGBUS(7), SIGTRAP(5) — ART uses these
   // for implicit null checks and debugging. Intercepting them breaks
   // the runtime (ANR, hangs).
-  const FATAL_SIGNALS = new Set([
-    1, 2, 3, 6, 9, 14, 15,
-  ]) // SIGHUP, SIGINT, SIGQUIT, SIGABRT, SIGKILL, SIGALRM, SIGTERM
+  const FATAL_SIGNALS = new Set([1, 2, 3, 6, 9, 14, 15]) // SIGHUP, SIGINT, SIGQUIT, SIGABRT, SIGKILL, SIGALRM, SIGTERM
 
   /**
    * Install native-level hooks for libc termination functions.
@@ -137,7 +145,7 @@ export namespace AntiTamper {
    */
   export function performNative(): void {
     if ((globalThis as any)[GUARD_KEY]) return
-    (globalThis as any)[GUARD_KEY] = true
+    ;(globalThis as any)[GUARD_KEY] = true
 
     try {
       const libc = Process.findModuleByName("libc.so")
@@ -273,7 +281,11 @@ export namespace AntiTamper {
         const nr = args[0].toInt32()
 
         if (nr === table.exit || nr === table.exit_group) {
-          log(LogType.Info, NAME, `syscall(${nr}) [exit/exit_group] → syscall(${table.getpid}) [getpid]`)
+          log(
+            LogType.Info,
+            NAME,
+            `syscall(${nr}) [exit/exit_group] → syscall(${table.getpid}) [getpid]`,
+          )
           args[0] = ptr(table.getpid)
         } else if (nr === table.kill) {
           const pid = args[1].toInt32()
@@ -351,5 +363,4 @@ export namespace AntiTamper {
       },
     })
   }
-
 }

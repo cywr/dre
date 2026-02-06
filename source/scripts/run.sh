@@ -23,6 +23,15 @@ if ! ls $FRIDA_BINDING &> /dev/null; then
     fi
 fi
 
+# Suppress ANR/crash dialogs during instrumentation
+# Frida hook init blocks the main thread, triggering Android's watchdog
+adb shell settings put global hide_error_dialogs 1
+
+cleanup() {
+  adb shell settings put global hide_error_dialogs 0
+}
+trap cleanup EXIT
+
 echo "Building project..."
 pnpm run build
 

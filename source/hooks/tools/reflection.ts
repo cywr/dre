@@ -1,4 +1,5 @@
 import { log, LogType } from "../../utils/logger"
+import { REFLECTION_IGNORE_LIST } from "../../utils/types/constants"
 import Java from "frida-java-bridge"
 
 /**
@@ -7,24 +8,9 @@ import Java from "frida-java-bridge"
  */
 export namespace Reflection {
   const NAME = "[Reflection]"
-  // Filter out system/framework classes to avoid crashes
-  const FILTERED_PACKAGES = [
-    "java.lang.",
-    "java.util.",
-    "android.os.",
-    "android.app.",
-    "android.content.",
-    "android.view.",
-    "com.android.",
-    "androidx.",
-    "dalvik.",
-    "libcore.",
-    "sun.",
-    "javax.crypto.",
-  ]
 
   function shouldFilter(className: string): boolean {
-    return FILTERED_PACKAGES.some((pkg) => className.startsWith(pkg))
+    return REFLECTION_IGNORE_LIST.some((pkg) => className.startsWith(pkg))
   }
 
   export function perform(): void {

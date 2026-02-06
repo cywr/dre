@@ -262,8 +262,20 @@ export namespace NetworkMonitor {
           }
 
           const stack = getStackTrace()
-          if (logOnce(LogType.Hook, NAME, `URL.openConnection: ${urlStr}${formatStackLog(stack)}`, domain)) {
-            accessLog.push({ timestamp: Date.now(), api: "URL.openConnection", value: urlStr, stack })
+          if (
+            logOnce(
+              LogType.Hook,
+              NAME,
+              `URL.openConnection: ${urlStr}${formatStackLog(stack)}`,
+              domain,
+            )
+          ) {
+            accessLog.push({
+              timestamp: Date.now(),
+              api: "URL.openConnection",
+              value: urlStr,
+              stack,
+            })
           } else {
             log(LogType.Verbose, NAME, `URL.openConnection: ${urlStr} (repeat)`)
           }
@@ -281,9 +293,18 @@ export namespace NetworkMonitor {
   // ─── HTTP Headers ────────────────────────────────────────────────────
 
   const STANDARD_HEADERS = new Set([
-    "content-type", "accept", "user-agent", "host", "connection",
-    "accept-encoding", "content-length", "accept-language",
-    "cache-control", "cookie", "authorization", "transfer-encoding",
+    "content-type",
+    "accept",
+    "user-agent",
+    "host",
+    "connection",
+    "accept-encoding",
+    "content-length",
+    "accept-language",
+    "cache-control",
+    "cookie",
+    "authorization",
+    "transfer-encoding",
   ])
 
   function hookHTTPRequestHeaders(): void {
@@ -305,8 +326,20 @@ export namespace NetworkMonitor {
             const stack = getStackTrace()
             const dedupKey = `header:${url}:${keyLower}`
 
-            if (logOnce(LogType.Hook, NAME, `[HTTP Header] ${url}\n  ${keyStr}: ${value}${formatStackLog(stack)}`, dedupKey)) {
-              accessLog.push({ timestamp: Date.now(), api: "HTTP.setRequestProperty", value: `${url} ${keyStr}: ${value}`, stack })
+            if (
+              logOnce(
+                LogType.Hook,
+                NAME,
+                `[HTTP Header] ${url}\n  ${keyStr}: ${value}${formatStackLog(stack)}`,
+                dedupKey,
+              )
+            ) {
+              accessLog.push({
+                timestamp: Date.now(),
+                api: "HTTP.setRequestProperty",
+                value: `${url} ${keyStr}: ${value}`,
+                stack,
+              })
             }
           }
         } catch (e) {
@@ -333,18 +366,42 @@ export namespace NetworkMonitor {
 
         try {
           let url = ""
-          try { url = this.getURL().toString() } catch (_) { url = "[unknown]" }
+          try {
+            url = this.getURL().toString()
+          } catch (_) {
+            url = "[unknown]"
+          }
 
           let contentType = ""
-          try { contentType = this.getContentType() || "" } catch (_) { contentType = "[error]" }
+          try {
+            contentType = this.getContentType() || ""
+          } catch (_) {
+            contentType = "[error]"
+          }
 
           let contentLength = -1
-          try { contentLength = this.getContentLength() } catch (_) { /* ignore */ }
+          try {
+            contentLength = this.getContentLength()
+          } catch (_) {
+            /* ignore */
+          }
 
           const dedupKey = `response:${url}`
 
-          if (logOnce(LogType.Hook, NAME, `[HTTP Response] ${url} status=${code} type=${contentType} length=${contentLength}`, dedupKey)) {
-            accessLog.push({ timestamp: Date.now(), api: "HTTP.getResponseCode", value: `${url} status=${code} type=${contentType} length=${contentLength}`, stack: "" })
+          if (
+            logOnce(
+              LogType.Hook,
+              NAME,
+              `[HTTP Response] ${url} status=${code} type=${contentType} length=${contentLength}`,
+              dedupKey,
+            )
+          ) {
+            accessLog.push({
+              timestamp: Date.now(),
+              api: "HTTP.getResponseCode",
+              value: `${url} status=${code} type=${contentType} length=${contentLength}`,
+              stack: "",
+            })
           }
         } catch (e) {
           log(LogType.Debug, NAME, `HTTP response logging failed: ${e}`)

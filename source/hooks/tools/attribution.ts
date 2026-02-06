@@ -346,14 +346,13 @@ export namespace Attribution {
         historyUrl: any,
       ) {
         const dataStr = data ? data.toString() : ""
-        const snippet = dataStr.length > 500 ? dataStr.substring(0, 500) + "..." : dataStr
         log(
           LogType.Hook,
           NAME,
           `WebView.loadDataWithBaseURL()` +
             `\n  Base URL: ${baseUrl}` +
             `\n  MIME: ${mimeType}` +
-            `\n  Data (first 500): ${snippet}`,
+            `\n  Data: ${dataStr}`,
         )
         logCorrelation(baseUrl ? baseUrl.toString() : "")
         return this.loadDataWithBaseURL(baseUrl, data, mimeType, encoding, historyUrl)
@@ -411,7 +410,9 @@ export namespace Attribution {
           let isJsInterface = false
 
           for (let a = 0; a < annotations.length; a++) {
-            if (annotations[a].annotationType().getName() === "android.webkit.JavascriptInterface") {
+            if (
+              annotations[a].annotationType().getName() === "android.webkit.JavascriptInterface"
+            ) {
               isJsInterface = true
               break
             }
@@ -458,7 +459,11 @@ export namespace Attribution {
       }
 
       if (hookedCount > 0) {
-        log(LogType.Hook, NAME, `Hooked ${hookedCount} @JavascriptInterface methods on ${bridgeName} (${className})`)
+        log(
+          LogType.Hook,
+          NAME,
+          `Hooked ${hookedCount} @JavascriptInterface methods on ${bridgeName} (${className})`,
+        )
       }
     } catch (e) {
       log(LogType.Debug, NAME, `hookJsBridgeMethods failed for ${bridgeName}: ${e}`)
@@ -474,7 +479,6 @@ export namespace Attribution {
       WebView.evaluateJavascript.implementation = function (script: any, callback: any) {
         try {
           const scriptStr = script ? script.toString() : ""
-          const snippet = scriptStr.length > 500 ? scriptStr.substring(0, 500) + "..." : scriptStr
           const hasCallback = callback !== null
           const dedupKey = `evaljs:${scriptStr.substring(0, 80)}`
 
@@ -482,7 +486,7 @@ export namespace Attribution {
             LogType.Hook,
             NAME,
             `[evaluateJavascript]` +
-              `\n  Script (first 500): ${snippet}` +
+              `\n  Script: ${scriptStr}` +
               `\n  Has callback: ${hasCallback}` +
               formatStackLog(getStackTrace()),
             dedupKey,

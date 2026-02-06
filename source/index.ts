@@ -6,15 +6,16 @@ import {
   AntiRoot,
   AntiTamper,
   Attribution,
-  Base64,
-  Cipher,
+  DCL,
   DeviceSpoofing,
   Geolocation,
   NetworkMonitor,
   PIIWatcher,
+  Reflection,
   SharedPreferences,
   SSLPinning,
 } from "./hooks"
+import { NativeMonitor } from "./hooks/native"
 import { Scratchpad } from "./scratchpad"
 import { Country } from "./utils/enums"
 import { LogLevel, setLogLevel, setShowStackTraces } from "./utils/logger"
@@ -22,7 +23,7 @@ import { setActiveCountry } from "./utils/types"
 
 setLogLevel(LogLevel.INFO)
 setShowStackTraces(false)
-setActiveCountry(Country.SINGAPORE)
+setActiveCountry(Country.BRAZIL)
 
 if (Java.available) {
   // Java hooks FIRST — must run before native hooks to avoid
@@ -45,22 +46,13 @@ if (Java.available) {
     Geolocation.perform()
     NetworkMonitor.perform()
 
-    SharedPreferences.perform(
-      [],
-      [
-        "com.google.android.gms",
-        "com.facebook.ads",
-        "com.appsflyer",
-        "com.crashlytics",
-        "adjust",
-        "WebViewChromiumPrefs",
-        "WebViewProfilePrefs",
-        "AwOriginVisitLoggerPrefs",
-      ],
-    )
+    SharedPreferences.perform()
 
-    Base64.perform()
-    Cipher.perform()
+    DCL.perform()
+    Reflection.perform()
+
+    // Base64.perform()
+    // Cipher.perform()
 
     Attribution.perform()
   })
@@ -75,4 +67,10 @@ if (Java.available) {
   // with frida-java-bridge's internal hooks on libc functions.
   AntiFrida.performNative()
   AntiTamper.performNative()
+
+  // Unified native monitoring
+  // Unified native monitoring — uncomment and set target library:
+  // NativeMonitor.perform("libtarget.so")
+  // Use { skipSyscalls: true } if target native code crashes with libc hooks:
+  // NativeMonitor.perform("libtarget.so", { skipSyscalls: true })
 }

@@ -1,4 +1,5 @@
 import { log, LogType } from "../../utils/logger"
+import { SHARED_PREFERENCES_IGNORE_LIST } from "../../utils/types/constants"
 import Java from "frida-java-bridge"
 
 enum Action {
@@ -51,22 +52,20 @@ export namespace SharedPreferences {
   }
 
   /**
-   * Initialize the hook with optional target files to monitor and ignore list.
+   * Initialize the hook with optional target files to monitor.
    * @param targetList Optional list of specific SharedPreferences files to monitor
-   * @param ignorePrefixes Optional list of file path substrings to ignore
    */
-  export function initialize(targetList?: string[], ignorePrefixes?: string[]): void {
+  export function initialize(targetList?: string[]): void {
     targets = targetList || []
-    ignoreList = ignorePrefixes || []
+    ignoreList = [...SHARED_PREFERENCES_IGNORE_LIST]
   }
 
   /**
    * Main hook method that enables SharedPreferences monitoring.
    * @param targetList Optional list of specific SharedPreferences files to monitor
-   * @param ignorePrefixes Optional list of file path substrings to ignore
    */
-  export function perform(targetList?: string[], ignorePrefixes?: string[]): void {
-    initialize(targetList, ignorePrefixes)
+  export function perform(targetList?: string[]): void {
+    initialize(targetList)
     info()
 
     try {
